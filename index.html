@@ -133,10 +133,13 @@
 
   .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .cat-tile { background: var(--panel-raised); border: 1px solid var(--border); border-radius: 14px; padding: 16px 14px; cursor: pointer; display: flex; flex-direction: column; gap: 10px; }
-  .cat-tile .cat-ico { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .cat-tile .cat-ico { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
   .cat-tile .cat-ico svg { width: 19px; height: 19px; }
   .cat-tile .cat-name { font-size: 13.5px; font-weight: 500; }
   .cat-tile .cat-sub { font-size: 11px; color: var(--text-dim); }
+
+  .sheet-view.active { animation: viewIn .2s ease; }
+  @keyframes viewIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
   .field { margin-bottom: 16px; }
   .field label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
@@ -232,6 +235,7 @@
       <button class="primary" id="pingBtn">Проверить связь</button>
     </div>
     <div class="footnote" id="footnote">Тестовые данные. Реальные показания появятся после подключения коробочки и приёмника.</div>
+    <div style="text-align:center;font-size:10px;color:var(--text-dim);margin-top:10px;">build 12 · 05.09.2026</div>
   </div>
 </div>
 
@@ -326,9 +330,23 @@
       <label class="switch"><input type="checkbox" id="testModeToggle"><span class="track"></span></label>
     </div>
     <div class="field" id="dataUrlField" style="margin-top:14px;">
-      <label>Ссылка на реальные данные (JSON)</label>
-      <input type="text" id="dataUrlInput" placeholder="https://raw.githubusercontent.com/ник/repo/main/data.json">
+      <label>Способ получения данных</label>
+      <div class="seg" id="dataSourceSeg">
+        <button data-mode="github">GitHub (JSON)</button>
+        <button data-mode="cloudflare">Cloudflare (сервер)</button>
+      </div>
+      <input type="text" id="dataUrlInput" placeholder="https://raw.githubusercontent.com/ник/repo/main/data.json" style="margin-top:8px;">
       <div class="hint">Сюда домашний модуль складывает последние показания.</div>
+    </div>
+
+    <div class="field">
+      <label>Отступ для полноэкранного режима</label>
+      <div class="seg" id="fsOffsetSeg">
+        <button data-mode="off">Выкл</button>
+        <button data-mode="small">Небольшой</button>
+        <button data-mode="large">Большой (~2см)</button>
+      </div>
+      <div class="hint">Если после включения полноэкранного режима в Telegram кнопки Telegram перекрывают верх приложения — включи отступ вручную.</div>
     </div>
     <div class="controls"><button class="primary" id="saveDeviceBtn">Готово</button></div>
   </div>
@@ -364,7 +382,7 @@
   };
 
   const DEFAULTS = {
-    deviceName: 'Коробочка', testMode: true, dataUrl: '', theme: 'calm-light',
+    deviceName: 'Коробочка', testMode: true, dataUrl: '', dataSource: 'github', fsOffset: 'off', theme: 'calm-light',
     loraPreset: 'power', lbtMode: false, gnssMode: 'gps',
     sensors: {
       tempIn: { enabled: true, mode: 'full' }, tempOut: { enabled: true, mode: 'full' },
@@ -400,9 +418,10 @@
     };
   }
   function fetchRealReading() {
-    if (!settings.dataUrl) return Promise.reject(new Error('Ссылка на данные не задана'));
-    const url = settings.dataUrl + (settings.dataUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
-    return fetch(url).then(r => { if (!r.ok) throw new Error('Файл недоступен'); return r.json(); });
+    const url = settings.dataUrl;
+    if (!url) return Promise.reject(new Error('Ссылка на данные не задана'));
+    const full = url + (url.includes('?') ? '&' : '?') + '_=' + Date.now();
+    return fetch(full).then(r => { if (!r.ok) throw new Error('Сервер недоступен'); return r.json(); });
   }
 
   function renderMain() {
@@ -585,13 +604,14 @@
     { id: 'sensors', name: 'Датчики', sub: 'Температура, акселерометр', icon: 'thermo' },
     { id: 'device', name: 'Устройство', sub: 'Название, тест-режим', icon: 'box' }
   ];
+  const CAT_COLORS = ['#8E7CC3', '#57BB8A', '#5B9BD5', '#E0A24B', '#D97AA6'];
   function renderCatGrid() {
     CATEGORIES[0].sub = THEME_META[settings.theme] ? THEME_META[settings.theme].name : '';
     const grid = document.getElementById('catGrid'); grid.innerHTML = '';
     CATEGORIES.forEach((c, i) => {
       const tile = document.createElement('div'); tile.className = 'cat-tile';
-      const col = isGoogle() ? ['var(--amber)','var(--red)','var(--yellow)','var(--teal)','var(--amber)'][i] : 'var(--amber)';
-      tile.innerHTML = `<div class="cat-ico" style="background:${col}22;color:${col}">${ICONS[c.icon]}</div><div><div class="cat-name">${c.name}</div><div class="cat-sub">${c.sub}</div></div>`;
+      const col = CAT_COLORS[i % CAT_COLORS.length];
+      tile.innerHTML = `<div class="cat-ico" style="background:${col}33;color:${col}">${ICONS[c.icon]}</div><div><div class="cat-name">${c.name}</div><div class="cat-sub">${c.sub}</div></div>`;
       tile.addEventListener('click', () => openSheetView(c.id));
       grid.appendChild(tile);
     });
@@ -637,6 +657,8 @@
     document.getElementById('testModeToggle').checked = settings.testMode;
     document.getElementById('dataUrlInput').value = settings.dataUrl;
     document.getElementById('dataUrlField').style.display = settings.testMode ? 'none' : 'block';
+    setSeg('dataSourceSeg', settings.dataSource);
+    setSeg('fsOffsetSeg', settings.fsOffset);
     document.getElementById('lbtToggle').checked = settings.lbtMode;
     document.getElementById('gpsEnabled').checked = settings.sensors.gps.enabled;
     document.getElementById('tempInEnabled').checked = settings.sensors.tempIn.enabled;
@@ -678,18 +700,28 @@
     settings.deviceName = document.getElementById('deviceNameInput').value.trim() || 'Коробочка';
     settings.testMode = document.getElementById('testModeToggle').checked;
     settings.dataUrl = document.getElementById('dataUrlInput').value.trim();
+    settings.dataSource = document.querySelector('#dataSourceSeg button.active').dataset.mode;
+    settings.fsOffset = document.querySelector('#fsOffsetSeg button.active').dataset.mode;
+    updateSafeTop();
     backHomeAndSave();
   });
 
+  const FS_OFFSET_PX = { off: 0, small: 24, large: 64 };
+  let autoSafeTop = 0;
+  function updateSafeTop() {
+    const manual = FS_OFFSET_PX[settings.fsOffset] || 0;
+    document.documentElement.style.setProperty('--safe-top', (autoSafeTop + manual) + 'px');
+  }
+
   function applyTelegramChrome() {
     const tg = window.Telegram && window.Telegram.WebApp;
-    if (!tg) return;
+    if (!tg) { updateSafeTop(); return; }
     tg.ready(); tg.expand();
     if (typeof tg.requestFullscreen === 'function') { try { tg.requestFullscreen(); } catch (e) {} }
     const updateSafeArea = () => {
       const inset = tg.safeAreaInset || {}; const contentInset = tg.contentSafeAreaInset || {};
-      const top = Math.max(inset.top || 0, contentInset.top || 0);
-      document.documentElement.style.setProperty('--safe-top', top + 'px');
+      autoSafeTop = Math.max(inset.top || 0, contentInset.top || 0);
+      updateSafeTop();
     };
     updateSafeArea();
     if (tg.onEvent) { tg.onEvent('safeAreaChanged', updateSafeArea); tg.onEvent('fullscreenChanged', updateSafeArea); }
