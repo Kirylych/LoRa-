@@ -148,6 +148,10 @@
   [data-theme^="google"] .cat-grid { grid-template-columns: 1fr; }
   [data-theme^="google"] .cat-tile { flex-direction: row; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 16px; }
   [data-theme^="google"] .cat-tile .cat-ico { width: 42px; height: 42px; flex-shrink: 0; }
+  .cat-island { border: 1px solid var(--border); border-radius: 16px; overflow: hidden; background: var(--panel-raised); }
+  .cat-island-title { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-dim); padding: 12px 16px 4px; }
+  .cat-island .cat-tile { border-radius: 0; border: none; border-bottom: 1px solid var(--border); background: transparent; }
+  .cat-island .cat-tile:last-child { border-bottom: none; }
 
   .sheet-view.active { animation: viewIn .2s ease; }
   @keyframes viewIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
@@ -246,8 +250,19 @@
       <button class="primary" id="pingBtn">Проверить связь</button>
     </div>
     <div class="footnote" id="footnote">Тестовые данные. Реальные показания появятся после подключения коробочки и приёмника.</div>
-    <div style="text-align:center;font-size:10px;color:var(--text-dim);margin-top:10px;">build 13 · 05.09.2026</div>
+    <div style="text-align:center;font-size:10px;color:var(--text-dim);margin-top:10px;">build 14 · 05.09.2026</div>
   </div>
+</div>
+
+<div class="overlay" id="pinOverlay"></div>
+<div class="sheet" id="pinSheet" style="padding-bottom:20px;">
+  <div class="sheet-handle"></div>
+  <h2 style="text-align:center;">Введите пароль</h2>
+  <div class="field">
+    <input type="password" id="pinEnterInput" placeholder="Пароль" inputmode="numeric">
+    <div class="hint" id="pinError" style="color:var(--red);display:none;">Неверный пароль</div>
+  </div>
+  <div class="controls"><button class="primary" id="pinSubmitBtn">Войти</button></div>
 </div>
 
 <div class="overlay" id="overlay"></div>
@@ -361,7 +376,34 @@
     </div>
     <div class="controls"><button class="primary" id="saveDeviceBtn">Готово</button></div>
   </div>
-</div>
+
+  <div class="sheet-view" id="viewSecurity">
+    <div class="sheet-head"><div class="back-btn" data-back>‹</div><h2>Безопасность</h2></div>
+    <div class="field">
+      <label>Пароль на настройки</label>
+      <input type="text" id="pinInput" placeholder="Оставь пустым, чтобы отключить" maxlength="12">
+      <div class="hint">Если задан — при открытии настроек в новом сеансе попросит его ввести. Это простая защита от «друг потыкал кнопки», а не от взлома — код открыт и в браузере его можно обойти.</div>
+    </div>
+    <div class="toggle-row">
+      <div><div class="t-label">Скрывать координаты GPS</div><div class="t-sub">На вкладке GPS вместо точных координат и карты — заглушка</div></div>
+      <label class="switch"><input type="checkbox" id="hideGpsToggle"><span class="track"></span></label>
+    </div>
+    <div class="controls"><button class="primary" id="saveSecurityBtn">Готово</button></div>
+  </div>
+
+  <div class="sheet-view" id="viewUpdates">
+    <div class="sheet-head"><div class="back-btn" data-back>‹</div><h2>Обновления</h2></div>
+    <div id="updatesEmpty" style="text-align:center;padding:20px 10px;">
+      <div style="width:56px;height:56px;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:var(--amber);">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16l-4-4-4 4"/><path d="M12 12v9"/><path d="M20.4 17.5A5.5 5.5 0 0 0 18 7h-1.3A7 7 0 1 0 4 15.9"/></svg>
+      </div>
+      <div style="font-weight:500;">Нет соединения с сервером обновлений</div>
+      <div class="hint" style="margin-top:4px;">Появится автоматически, когда будет настроен сервер (раздел «Устройство»). Пока можно посмотреть, как это будет выглядеть:</div>
+      <div class="controls" style="margin-top:14px;"><button class="primary" id="checkUpdatesBtn">Проверить сейчас (демо)</button></div>
+    </div>
+    <div id="updatesList" style="display:none;"></div>
+  </div>
+  </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -373,7 +415,9 @@
     antenna: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-8"/><circle cx="12" cy="11" r="1.6"/><path d="M8.5 8.3a5 5 0 0 1 7 0"/><path d="M5.5 5.3a9.2 9.2 0 0 1 13 0"/></svg>',
     gauge: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l4-4.2"/><circle cx="12" cy="16" r="1.1" fill="currentColor" stroke="none"/></svg>',
     palette: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.96-4.49-9-10-9z"/></svg>',
-    box: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18"/><circle cx="7.3" cy="6" r=".9" fill="currentColor" stroke="none"/></svg>'
+    box: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18"/><circle cx="7.3" cy="6" r=".9" fill="currentColor" stroke="none"/></svg>',
+    lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+    update: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>'
   };
   function ico(name, color) { return `<span class="ico" style="color:${color}">${ICONS[name]}</span>`; }
 
@@ -396,12 +440,13 @@
   // ==================== ДАННЫЕ / НАСТРОЙКИ ПО УМОЛЧАНИЮ ====================
   const DEFAULTS = {
     deviceName: 'Коробочка', testMode: true, dataUrl: '', dataSource: 'github', fsOffset: 'off', theme: 'calm-light',
-    loraPreset: 'power', lbtMode: false, gnssMode: 'gps',
+    loraPreset: 'power', lbtMode: false, gnssMode: 'gps', pin: '', hideGps: false,
     sensors: {
       tempIn: { enabled: true, mode: 'full' }, tempOut: { enabled: true, mode: 'full' },
       accel: { enabled: true }, gps: { enabled: true }, batt: { enabled: true }
     }
   };
+  let sessionUnlocked = false;
 
   let settings = loadSettings();
   let mapInstance = null, mapMarker = null;
@@ -491,6 +536,10 @@
   function renderGps() {
     const wrap = document.getElementById('gpsBigWrap');
     if (!settings.sensors.gps.enabled) { wrap.innerHTML = '<div class="empty-note">GPS выключен в настройках</div>'; mapInstance = null; return; }
+    if (settings.hideGps) {
+      wrap.innerHTML = `<div class="empty-note">${ico('lock', 'var(--text-dim)')}Координаты скрыты владельцем</div>`;
+      mapInstance = null; return;
+    }
     wrap.innerHTML = `
       <div id="mapBig" class="gps-map-big"></div>
       <div class="gps-stats">
@@ -631,24 +680,49 @@
   });
 
   // ==================== НАСТРОЙКИ: ШТОРКА И КАТЕГОРИИ ====================
+  const CAT_COLORS = ['#8E7CC3', '#57BB8A', '#5B9BD5', '#E0A24B', '#D97AA6', '#4FB0C6', '#C97A4B'];
   const CATEGORIES = [
-    { id: 'theme', name: 'Тема', sub: '', icon: 'palette' },
-    { id: 'lora', name: 'Мощность модуля', sub: 'Частота и режим', icon: 'antenna' },
-    { id: 'gps', name: 'GPS / ГНСС', sub: 'Координаты', icon: 'pin' },
-    { id: 'sensors', name: 'Датчики', sub: 'Температура, акселерометр', icon: 'thermo' },
-    { id: 'device', name: 'Устройство', sub: 'Название, тест-режим', icon: 'box' }
+    { id: 'theme', name: 'Тема', sub: '', icon: 'palette', group: 'interface' },
+    { id: 'device', name: 'Устройство', sub: 'Название, отступ, связь', icon: 'box', group: 'interface' },
+    { id: 'lora', name: 'Мощность модуля', sub: 'Частота и режим', icon: 'antenna', group: 'system' },
+    { id: 'security', name: 'Безопасность', sub: 'Пароль, приватность GPS', icon: 'lock', group: 'system' },
+    { id: 'gps', name: 'GPS / ГНСС', sub: 'Координаты', icon: 'pin', group: null },
+    { id: 'sensors', name: 'Датчики', sub: 'Температура, акселерометр', icon: 'thermo', group: null },
+    { id: 'updates', name: 'Обновления', sub: 'Прошивка базы и коробочки', icon: 'update', group: null }
   ];
-  const CAT_COLORS = ['#8E7CC3', '#57BB8A', '#5B9BD5', '#E0A24B', '#D97AA6'];
   function renderCatGrid() {
-    CATEGORIES[0].sub = THEME_META[settings.theme] ? THEME_META[settings.theme].name : '';
+    const themeIdx = CATEGORIES.findIndex(c => c.id === 'theme');
+    CATEGORIES[themeIdx].sub = THEME_META[settings.theme] ? THEME_META[settings.theme].name : '';
     const grid = document.getElementById('catGrid'); grid.innerHTML = '';
-    CATEGORIES.forEach((c, i) => {
-      const tile = document.createElement('div'); tile.className = 'cat-tile';
+
+    function makeRow(c, i) {
+      const row = document.createElement('div'); row.className = 'cat-tile';
       const col = CAT_COLORS[i % CAT_COLORS.length];
-      tile.innerHTML = `<div class="cat-ico" style="background:${col}33;color:${col}">${ICONS[c.icon]}</div><div><div class="cat-name">${c.name}</div><div class="cat-sub">${c.sub}</div></div>`;
-      tile.addEventListener('click', () => openSheetView(c.id));
-      grid.appendChild(tile);
-    });
+      row.innerHTML = `<div class="cat-ico" style="background:${col}33;color:${col}">${ICONS[c.icon]}</div><div><div class="cat-name">${c.name}</div><div class="cat-sub">${c.sub}</div></div>`;
+      row.addEventListener('click', () => openSheetView(c.id));
+      return row;
+    }
+
+    if (isGoogle()) {
+      // В Google-теме группируем связанные разделы в общие "острова"
+      const groups = { system: [], interface: [] };
+      const rest = [];
+      CATEGORIES.forEach((c, i) => {
+        if (c.group && groups[c.group]) groups[c.group].push({ c, i });
+        else rest.push({ c, i });
+      });
+      [['Система', groups.system], ['Интерфейс', groups.interface]].forEach(([title, items]) => {
+        if (!items.length) return;
+        const island = document.createElement('div'); island.className = 'cat-island';
+        const head = document.createElement('div'); head.className = 'cat-island-title'; head.textContent = title;
+        island.appendChild(head);
+        items.forEach(({ c, i }) => island.appendChild(makeRow(c, i)));
+        grid.appendChild(island);
+      });
+      rest.forEach(({ c, i }) => grid.appendChild(makeRow(c, i)));
+    } else {
+      CATEGORIES.forEach((c, i) => grid.appendChild(makeRow(c, i)));
+    }
   }
   function openSheetView(id) {
     document.querySelectorAll('.sheet-view').forEach(v => v.classList.remove('active'));
@@ -685,7 +759,30 @@
   document.getElementById('testModeToggle').addEventListener('change', (e) => { document.getElementById('dataUrlField').style.display = e.target.checked ? 'none' : 'block'; });
 
   const overlay = document.getElementById('overlay'), sheet = document.getElementById('sheet');
+  const pinOverlay = document.getElementById('pinOverlay'), pinSheet = document.getElementById('pinSheet');
+
   function openSheet() {
+    if (settings.pin && !sessionUnlocked) { openPinGate(); return; }
+    openSheetActual();
+  }
+  function openPinGate() {
+    document.getElementById('pinEnterInput').value = '';
+    document.getElementById('pinError').style.display = 'none';
+    pinOverlay.classList.add('open'); pinSheet.classList.add('open');
+    setTimeout(() => document.getElementById('pinEnterInput').focus(), 200);
+  }
+  function closePinGate() { pinOverlay.classList.remove('open'); pinSheet.classList.remove('open'); }
+  document.getElementById('pinSubmitBtn').addEventListener('click', () => {
+    if (document.getElementById('pinEnterInput').value === settings.pin) {
+      sessionUnlocked = true; closePinGate(); openSheetActual();
+    } else {
+      document.getElementById('pinError').style.display = 'block';
+    }
+  });
+  document.getElementById('pinEnterInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('pinSubmitBtn').click(); });
+  pinOverlay.addEventListener('click', closePinGate);
+
+  function openSheetActual() {
     pendingTheme = settings.theme;
     document.getElementById('deviceNameInput').value = settings.deviceName;
     document.getElementById('testModeToggle').checked = settings.testMode;
@@ -702,6 +799,8 @@
     setSeg('tempInModeSeg', settings.sensors.tempIn.mode);
     setSeg('tempOutModeSeg', settings.sensors.tempOut.mode);
     setSeg('gnssSeg', settings.gnssMode);
+    document.getElementById('pinInput').value = settings.pin;
+    document.getElementById('hideGpsToggle').checked = settings.hideGps;
     renderCatGrid(); renderThemeGrid(); renderPresets(); updateLbtRow();
     openSheetView('home');
     overlay.classList.add('open'); sheet.classList.add('open');
@@ -738,6 +837,53 @@
     settings.fsOffset = document.querySelector('#fsOffsetSeg button.active').dataset.mode;
     updateSafeTop();
     backHomeAndSave();
+  });
+  document.getElementById('saveSecurityBtn').addEventListener('click', () => {
+    settings.pin = document.getElementById('pinInput').value.trim();
+    settings.hideGps = document.getElementById('hideGpsToggle').checked;
+    backHomeAndSave();
+  });
+
+  // ---- Обновления (пока демо-заглушка, без реального сервера) ----
+  const UPDATE_STAGES = ['Скачивание', 'Проверка', 'Установка'];
+  document.getElementById('checkUpdatesBtn').addEventListener('click', function () {
+    this.disabled = true; this.textContent = 'Проверяю…';
+    setTimeout(() => {
+      document.getElementById('updatesEmpty').style.display = 'none';
+      const list = document.getElementById('updatesList');
+      list.style.display = 'block';
+      list.innerHTML = '';
+      [{ name: 'Коробочка', cur: '1.0.0', next: '1.1.0' }, { name: 'База', cur: '1.0.0', next: '1.0.2' }].forEach(dev => {
+        const row = document.createElement('div');
+        row.className = 'card wide'; row.style.marginBottom = '10px';
+        row.innerHTML = `<div class="label">${dev.name}</div>
+          <div class="subrow"><span>Текущая версия</span><b>${dev.cur}</b></div>
+          <div class="subrow"><span>Доступна</span><b style="color:var(--amber)">${dev.next}</b></div>
+          <div class="controls" style="margin-top:10px;"><button class="primary update-go">Обновить</button></div>
+          <div class="update-progress" style="display:none;margin-top:10px;">
+            <div class="battery-track"><div class="battery-fill upd-fill" style="width:0%;background:var(--amber);"></div></div>
+            <div class="hint upd-stage" style="margin-top:6px;">Скачивание…</div>
+          </div>`;
+        row.querySelector('.update-go').addEventListener('click', function () {
+          const btnWrap = this.closest('.controls'); btnWrap.style.display = 'none';
+          const prog = row.querySelector('.update-progress'); prog.style.display = 'block';
+          const fill = row.querySelector('.upd-fill'); const stageEl = row.querySelector('.upd-stage');
+          let step = 0;
+          const iv = setInterval(() => {
+            step++;
+            const pct = Math.min(100, Math.round((step / (UPDATE_STAGES.length + 1)) * 100));
+            fill.style.width = pct + '%';
+            if (step <= UPDATE_STAGES.length) stageEl.textContent = UPDATE_STAGES[step - 1] + '…';
+            if (step > UPDATE_STAGES.length) {
+              clearInterval(iv);
+              stageEl.textContent = '✓ Обновлено до ' + dev.next;
+              row.querySelector('.subrow b').textContent = dev.next;
+            }
+          }, 800);
+        });
+        list.appendChild(row);
+      });
+    }, 700);
   });
 
   // ==================== TELEGRAM / ПОЛНОЭКРАННЫЙ РЕЖИМ ====================
