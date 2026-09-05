@@ -1,39 +1,64 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="calm-light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Коробочка · Панель</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
-  :root{
-    --bg: #14181A; --panel: #1D2224; --panel-raised: #232829; --border: #2A2F31;
-    --amber: #FF9500; --teal: #3FBFAE; --red: #E5484D;
-    --text: #EDEAE3; --text-muted: #8B9296; --text-dim: #5B6265; --safe-top: 0px;
+  :root, [data-theme="calm-light"]{
+    --bg:#F7F0E3; --panel:#FFFFFF; --panel-raised:#FBF5E8; --sand:#EDE0C7; --border:#E6D9BC;
+    --amber:#C1653D; --teal:#6B8F71; --red:#C1524B; --yellow:#C99A3D;
+    --text:#3C331F; --text-muted:#8A7A5C; --text-dim:#B7A886;
+    --shadow: 0 1px 3px rgba(60,51,31,0.08), 0 1px 2px rgba(60,51,31,0.05);
+    --btn-text: #3C331F; --safe-top: 0px;
+  }
+  [data-theme="calm-dark"]{
+    --bg:#231D14; --panel:#2C2417; --panel-raised:#33291A; --sand:#3B2F1D; --border:#4A3C24;
+    --amber:#E08A5B; --teal:#7FB58A; --red:#E2776D; --yellow:#E0B75B;
+    --text:#F1E6D3; --text-muted:#BBA985; --text-dim:#8C7C5C;
+    --shadow: 0 2px 6px rgba(0,0,0,0.35);
+    --btn-text:#231D14;
+  }
+  [data-theme="google-light"]{
+    --bg:#FFFFFF; --panel:#FFFFFF; --panel-raised:#F1F3F4; --sand:#F1F3F4; --border:#E0E0E0;
+    --amber:#4285F4; --teal:#34A853; --red:#EA4335; --yellow:#FBBC05;
+    --text:#202124; --text-muted:#5F6368; --text-dim:#9AA0A6;
+    --shadow: 0 1px 2px rgba(60,64,67,0.12), 0 1px 3px rgba(60,64,67,0.10);
+    --btn-text:#FFFFFF;
+  }
+  [data-theme="google-dark"]{
+    --bg:#202124; --panel:#28292C; --panel-raised:#303134; --sand:#35363A; --border:#3C4043;
+    --amber:#8AB4F8; --teal:#81C995; --red:#F28B82; --yellow:#FDD663;
+    --text:#E8EAED; --text-muted:#9AA0A6; --text-dim:#5F6368;
+    --shadow: 0 2px 6px rgba(0,0,0,0.45);
+    --btn-text:#202124;
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; transition: background .2s ease, color .2s ease; }
   .num { font-family: 'JetBrains Mono', monospace; }
   .wrap { max-width: 480px; margin: 0 auto; padding: calc(20px + var(--safe-top)) 0 40px; }
   .px { padding-left: 16px; padding-right: 16px; }
+  .ico { display: inline-flex; width: 15px; height: 15px; margin-right: 6px; vertical-align: -3px; }
+  .ico svg { width: 100%; height: 100%; }
 
   .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; gap: 10px; }
   .header h1 { font-size: 17px; font-weight: 600; margin: 0; }
   .header .sub { color: var(--text-dim); font-size: 12px; margin-top: 2px; }
   .header-right { display: flex; align-items: center; gap: 8px; }
-  .status-pill { display: flex; align-items: center; gap: 6px; background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 6px 10px 6px 8px; font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .status-pill { display: flex; align-items: center; gap: 6px; background: var(--panel); border: 1px solid var(--border); box-shadow: var(--shadow); border-radius: 20px; padding: 6px 10px 6px 8px; font-size: 12px; color: var(--text-muted); white-space: nowrap; }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 6px var(--teal); }
   .dot.off { background: var(--text-dim); box-shadow: none; }
   .dot.err { background: var(--red); box-shadow: 0 0 6px var(--red); }
-  .icon-btn { width: 34px; height: 34px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; color: var(--text-muted); cursor: pointer; }
+  .icon-btn { width: 34px; height: 34px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--panel); border: 1px solid var(--border); box-shadow: var(--shadow); border-radius: 10px; color: var(--text-muted); cursor: pointer; }
   .icon-btn:active { transform: scale(0.94); }
   .icon-btn svg { width: 18px; height: 18px; }
 
-  .signal-card { background: linear-gradient(180deg, var(--panel-raised), var(--panel)); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 14px; }
+  .signal-card { background: var(--panel-raised); border: 1px solid var(--border); box-shadow: var(--shadow); border-radius: 14px; padding: 18px; margin-bottom: 14px; }
   .signal-top { display: flex; justify-content: space-between; align-items: flex-start; }
-  .signal-label { color: var(--text-muted); font-size: 12px; }
+  .signal-label { color: var(--text-muted); font-size: 12px; display: flex; align-items: center; }
   .signal-value { font-size: 34px; font-weight: 700; margin-top: 4px; line-height: 1; }
   .signal-value span { font-size: 15px; color: var(--text-dim); font-weight: 400; }
   .bars { display: flex; align-items: flex-end; gap: 3px; height: 26px; }
@@ -43,7 +68,6 @@
   .bars i:nth-child(3){ height: 70%; } .bars i:nth-child(4){ height: 90%; } .bars i:nth-child(5){ height: 100%; }
   .signal-foot { display: flex; justify-content: space-between; margin-top: 12px; font-size: 11px; color: var(--text-dim); }
 
-  /* Tabs */
   .tabs-dots { display: flex; justify-content: center; gap: 7px; margin-bottom: 10px; }
   .tabs-dots .td { width: 6px; height: 6px; border-radius: 50%; background: var(--border); transition: all .2s ease; }
   .tabs-dots .td.active { width: 18px; background: var(--amber); }
@@ -54,8 +78,8 @@
   .tab-panel { flex: 0 0 100%; scroll-snap-align: start; padding: 0 16px; }
 
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
-  .card .label { font-size: 11.5px; color: var(--text-muted); margin-bottom: 8px; }
+  .card { background: var(--panel); border: 1px solid var(--border); box-shadow: var(--shadow); border-radius: 12px; padding: 14px; }
+  .card .label { font-size: 11.5px; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; }
   .card .value { font-size: 22px; font-weight: 500; }
   .card .value .unit { font-size: 13px; color: var(--text-dim); margin-left: 2px; }
   .card.accent .value { color: var(--amber); }
@@ -68,14 +92,14 @@
   .battery-track { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
   .battery-fill { height: 100%; background: var(--teal); border-radius: 3px; transition: width .4s ease; }
 
-  /* Big GPS panel */
-  .gps-map-big { height: 260px; border-radius: 14px; margin-bottom: 12px; filter: grayscale(0.3) brightness(0.85) contrast(1.05); border: 1px solid var(--border); }
+  .gps-map-big { height: 260px; border-radius: 14px; margin-bottom: 12px; border: 1px solid var(--border); box-shadow: var(--shadow); }
   .gps-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-  /* Big Accel panel */
   .accel-big-wrap { display: flex; flex-direction: column; align-items: center; padding: 6px 0 4px; }
+  .accel-svg-line { stroke: var(--border); }
+  #accelDot { fill: var(--amber); }
   .accel-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; width: 100%; margin-top: 16px; }
-  .accel-stat { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 10px; text-align: center; }
+  .accel-stat { background: var(--panel); border: 1px solid var(--border); box-shadow: var(--shadow); border-radius: 10px; padding: 10px; text-align: center; }
   .accel-stat .a-axis { font-size: 11px; color: var(--text-dim); }
   .accel-stat .a-val { font-size: 17px; font-weight: 500; margin-top: 3px; }
   .zbar-wrap { display: flex; align-items: center; gap: 10px; margin-top: 14px; width: 100%; }
@@ -85,48 +109,69 @@
   .zbar-label { font-size: 11px; color: var(--text-dim); white-space: nowrap; }
 
   .controls { display: flex; gap: 10px; margin-top: 14px; }
-  button { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; padding: 13px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--panel); color: var(--text); cursor: pointer; transition: transform .08s ease; }
-  .controls button { flex: 1; }
+  button { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; padding: 13px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--sand); color: var(--btn-text); cursor: pointer; transition: transform .08s ease; box-shadow: var(--shadow); }
+  .controls button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; }
   button:active { transform: scale(0.97); }
-  button.primary { background: var(--amber); border-color: var(--amber); color: #1A1400; }
+  button.primary { background: var(--amber); border-color: var(--amber); color: var(--btn-text); }
+
+  .spinner4 { width: 15px; height: 15px; border-radius: 50%; display: none; }
+  [data-theme^="google"] .spinner4.loading { display: block; background: conic-gradient(var(--amber) 0deg 90deg, var(--red) 90deg 180deg, var(--yellow) 180deg 270deg, var(--teal) 270deg 360deg); animation: spin4 .7s linear infinite; }
+  @keyframes spin4 { to { transform: rotate(360deg); } }
 
   .footnote { text-align: center; color: var(--text-dim); font-size: 11px; margin-top: 18px; line-height: 1.5; }
   .flash { animation: flash .5s ease; }
-  @keyframes flash { 0% { background: var(--panel); } 30% { background: var(--panel-raised); } 100% { background: var(--panel); } }
+  @keyframes flash { 0% { background: var(--panel-raised); } 30% { background: var(--panel); } 100% { background: var(--panel-raised); } }
 
-  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: opacity .2s ease; z-index: 50; }
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); opacity: 0; pointer-events: none; transition: opacity .2s ease; z-index: 50; }
   .overlay.open { opacity: 1; pointer-events: auto; }
-  .sheet { position: fixed; left: 0; right: 0; bottom: 0; max-width: 480px; margin: 0 auto; background: var(--panel-raised); border: 1px solid var(--border); border-bottom: none; border-radius: 18px 18px 0 0; padding: 16px 16px 24px; transform: translateY(100%); transition: transform .25s ease; max-height: 85vh; overflow-y: auto; z-index: 51; }
+  .sheet { position: fixed; left: 0; right: 0; bottom: 0; max-width: 480px; margin: 0 auto; background: var(--panel); border: 1px solid var(--border); border-bottom: none; border-radius: 18px 18px 0 0; padding: 16px 16px 24px; transform: translateY(100%); transition: transform .25s ease; max-height: 85vh; overflow-y: auto; z-index: 51; }
   .sheet.open { transform: translateY(0); }
   .sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 14px; }
-  .sheet h2 { font-size: 16px; margin: 0 0 14px; }
+  .sheet-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .sheet-head h2 { font-size: 16px; margin: 0; }
+  .back-btn { width: 30px; height: 30px; border-radius: 8px; background: var(--panel-raised); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); }
+
+  .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .cat-tile { background: var(--panel-raised); border: 1px solid var(--border); border-radius: 14px; padding: 16px 14px; cursor: pointer; display: flex; flex-direction: column; gap: 10px; }
+  .cat-tile .cat-ico { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .cat-tile .cat-ico svg { width: 19px; height: 19px; }
+  .cat-tile .cat-name { font-size: 13.5px; font-weight: 500; }
+  .cat-tile .cat-sub { font-size: 11px; color: var(--text-dim); }
+
   .field { margin-bottom: 16px; }
   .field label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
-  .field input[type="text"] { width: 100%; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 14px; font-family: 'Inter', sans-serif; }
+  .field input[type="text"] { width: 100%; background: var(--panel-raised); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 14px; font-family: 'Inter', sans-serif; }
   .field .hint { font-size: 11px; color: var(--text-dim); margin-top: 5px; line-height: 1.4; }
 
   .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
   .toggle-row:last-child { border-bottom: none; }
-  .toggle-row .t-label { font-size: 14px; }
+  .toggle-row .t-label { font-size: 14px; display: flex; align-items: center; }
   .toggle-row .t-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
   .switch { position: relative; width: 42px; height: 24px; flex-shrink: 0; }
   .switch input { opacity: 0; width: 0; height: 0; }
   .switch .track { position: absolute; inset: 0; background: var(--border); border-radius: 12px; transition: background .2s ease; cursor: pointer; }
-  .switch .track:before { content: ""; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: var(--text-muted); border-radius: 50%; transition: transform .2s ease, background .2s ease; }
+  .switch .track:before { content: ""; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform .2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.25); }
   .switch input:checked + .track { background: var(--amber); }
-  .switch input:checked + .track:before { transform: translateX(18px); background: #1A1400; }
+  .switch input:checked + .track:before { transform: translateX(18px); }
 
   .seg { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
-  .seg button { flex: 1; min-width: 70px; padding: 8px 6px; font-size: 12px; background: var(--panel); border: 1px solid var(--border); color: var(--text-muted); }
-  .seg button.active { background: var(--amber); border-color: var(--amber); color: #1A1400; }
+  .seg button { flex: 1; min-width: 70px; padding: 8px 6px; font-size: 12px; background: var(--panel-raised); border: 1px solid var(--border); color: var(--text-muted); box-shadow: none; }
+  .seg button.active { background: var(--amber); border-color: var(--amber); color: var(--btn-text); }
 
   .section-title { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin: 18px 0 4px; }
   .section-note { font-size: 11px; color: var(--text-dim); margin-bottom: 8px; line-height: 1.4; }
   .sheet .controls { margin-top: 20px; }
 
+  .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .theme-opt { border: 1px solid var(--border); border-radius: 12px; padding: 12px; cursor: pointer; text-align: center; background: var(--panel-raised); }
+  .theme-opt.active { border-color: var(--amber); box-shadow: 0 0 0 2px var(--amber) inset; }
+  .theme-opt .t-swatch { display: flex; justify-content: center; gap: 4px; margin-bottom: 6px; }
+  .theme-opt .t-swatch span { width: 12px; height: 12px; border-radius: 50%; }
+  .theme-opt .t-name { font-size: 12px; }
+
   .preset-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
-  .preset { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; cursor: pointer; background: var(--panel); }
-  .preset.active { border-color: var(--amber); background: rgba(255,149,0,0.08); }
+  .preset { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; cursor: pointer; background: var(--panel-raised); }
+  .preset.active { border-color: var(--amber); box-shadow: 0 0 0 1.5px var(--amber) inset; }
   .preset .p-top { display: flex; justify-content: space-between; align-items: center; }
   .preset .p-name { font-size: 13.5px; font-weight: 500; }
   .preset .p-radio { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--text-dim); flex-shrink: 0; position: relative; }
@@ -134,6 +179,9 @@
   .preset.active .p-radio:after { content: ""; position: absolute; inset: 3px; background: var(--amber); border-radius: 50%; }
   .preset .p-meta { font-size: 11px; color: var(--text-dim); margin-top: 4px; display: flex; gap: 10px; flex-wrap: wrap; }
   .preset .p-meta b { color: var(--text-muted); font-weight: 500; }
+
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
 </style>
 </head>
 <body>
@@ -146,6 +194,9 @@
       </div>
       <div class="header-right">
         <div class="status-pill"><span class="dot" id="statusDot"></span><span id="statusText">тест-режим</span></div>
+        <div class="icon-btn" id="themeQuickBtn" title="Сменить тему">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.96-4.49-9-10-9z"/></svg>
+        </div>
         <div class="icon-btn" id="settingsBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </div>
@@ -155,7 +206,7 @@
     <div class="signal-card">
       <div class="signal-top">
         <div>
-          <div class="signal-label">Сигнал LoRa</div>
+          <div class="signal-label" id="signalLabel">Сигнал LoRa</div>
           <div class="signal-value num" id="rssiValue">-72<span> дБм</span></div>
         </div>
         <div class="bars" id="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
@@ -171,19 +222,13 @@
 
   <div class="tabs-scroll" id="tabsScroll">
     <div class="tab-panel" id="panelMain"><div class="grid" id="sensorGrid"></div></div>
-
-    <div class="tab-panel" id="panelAccel">
-      <div class="accel-big-wrap" id="accelBigWrap"></div>
-    </div>
-
-    <div class="tab-panel" id="panelGps">
-      <div id="gpsBigWrap"></div>
-    </div>
+    <div class="tab-panel" id="panelAccel"><div class="accel-big-wrap" id="accelBigWrap"></div></div>
+    <div class="tab-panel" id="panelGps"><div id="gpsBigWrap"></div></div>
   </div>
 
   <div class="px">
     <div class="controls">
-      <button id="refreshBtn">Обновить показания</button>
+      <button id="refreshBtn"><span class="spinner4" id="refreshSpinner"></span><span>Обновить показания</span></button>
       <button class="primary" id="pingBtn">Проверить связь</button>
     </div>
     <div class="footnote" id="footnote">Тестовые данные. Реальные показания появятся после подключения коробочки и приёмника.</div>
@@ -193,96 +238,115 @@
 <div class="overlay" id="overlay"></div>
 <div class="sheet" id="sheet">
   <div class="sheet-handle"></div>
-  <h2>Настройки</h2>
 
-  <div class="field">
-    <label>Название устройства</label>
-    <input type="text" id="deviceNameInput" maxlength="30">
+  <div class="sheet-view active" id="viewHome">
+    <div class="sheet-head"><h2>Настройки</h2></div>
+    <div class="cat-grid" id="catGrid"></div>
   </div>
 
-  <div class="toggle-row">
-    <div>
-      <div class="t-label">Тестовый режим</div>
-      <div class="t-sub">Случайные данные вместо реального устройства</div>
+  <div class="sheet-view" id="viewTheme">
+    <div class="sheet-head"><div class="back-btn" data-back>‹</div><h2>Тема оформления</h2></div>
+    <div class="theme-grid" id="themeGrid"></div>
+    <div class="controls"><button class="primary" id="saveThemeBtn">Готово</button></div>
+  </div>
+
+  <div class="sheet-view" id="viewLora">
+    <div class="sheet-head"><div class="back-btn" data-back>‹</div><h2>Мощность модуля</h2></div>
+    <div class="section-note">Общие для базы и коробочки — оба устройства должны быть настроены одинаково.</div>
+    <div class="preset-list" id="loraPresets"></div>
+    <div class="toggle-row" id="lbtRow" style="margin-top:10px;">
+      <div>
+        <div class="t-label">LBT + AFA вместо duty cycle</div>
+        <div class="t-sub">«Слушать перед передачей» + адаптивная смена частоты</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="lbtToggle"><span class="track"></span></label>
     </div>
-    <label class="switch"><input type="checkbox" id="testModeToggle"><span class="track"></span></label>
+    <div class="controls"><button class="primary" id="saveLoraBtn">Готово</button></div>
   </div>
 
-  <div class="field" id="dataUrlField" style="margin-top:14px;">
-    <label>Ссылка на реальные данные (JSON)</label>
-    <input type="text" id="dataUrlInput" placeholder="https://raw.githubusercontent.com/ник/repo/main/data.json">
-    <div class="hint">Сюда домашний модуль складывает последние показания. Можно оставить пустым, пока устройства нет.</div>
-  </div>
-
-  <div class="section-title">Частота и мощность LoRa</div>
-  <div class="section-note">Общие для базы и коробочки — оба устройства должны быть настроены одинаково, иначе не услышат друг друга.</div>
-  <div class="preset-list" id="loraPresets"></div>
-
-  <div class="toggle-row" id="lbtRow" style="margin-top:10px;">
-    <div>
-      <div class="t-label">LBT + AFA вместо ограничения по времени</div>
-      <div class="t-sub">«Слушать перед передачей» + адаптивная смена частоты — разрешённая альтернатива duty cycle</div>
+  <div class="sheet-view" id="viewGps">
+    <div class="sheet-head"><div class="back-btn" data-back>‹</div><h2>GPS / ГНСС</h2></div>
+    <div class="toggle-row">
+      <div><div class="t-label">GPS</div><div class="t-sub">Показывать координаты и карту</div></div>
+      <label class="switch"><input type="checkbox" id="gpsEnabled"><span class="track"></span></label>
     </div>
-    <label class="switch"><input type="checkbox" id="lbtToggle"><span class="track"></span></label>
-  </div>
-
-  <div class="section-title">GPS / ГНСС</div>
-  <div class="toggle-row">
-    <div>
-      <div class="t-label">GPS</div>
-      <div class="t-sub">Показывать координаты и карту</div>
+    <div class="field" style="margin-top:8px;">
+      <label>Используемые системы</label>
+      <div class="seg" id="gnssSeg">
+        <button data-mode="gps">GPS</button>
+        <button data-mode="gps_glonass">GPS+ГЛОНАСС</button>
+        <button data-mode="all">Все (+BeiDou)</button>
+      </div>
     </div>
-    <label class="switch"><input type="checkbox" id="gpsEnabled"><span class="track"></span></label>
+    <div class="controls"><button class="primary" id="saveGpsBtn">Готово</button></div>
   </div>
-  <div class="field" style="margin-top:8px;">
-    <label>Используемые системы</label>
-    <div class="seg" id="gnssSeg">
-      <button data-mode="gps">GPS</button>
-      <button data-mode="gps_glonass">GPS+ГЛОНАСС</button>
-      <button data-mode="all">Все (+BeiDou)</button>
+
+  <div class="sheet-view" id="viewSensors">
+    <div class="sheet-head"><div class="back-btn" data-back>‹</div><h2>Датчики</h2></div>
+    <div class="toggle-row">
+      <div><div class="t-label">Температура внутри</div></div>
+      <label class="switch"><input type="checkbox" id="tempInEnabled"><span class="track"></span></label>
     </div>
-    <div class="hint">Выбери по факту того, что поддерживает купленный GPS-модуль.</div>
+    <div class="seg" id="tempInModeSeg">
+      <button data-mode="temp">Только t°</button>
+      <button data-mode="temp_hum">t° + влажность</button>
+      <button data-mode="full">t° + влажн. + давл.</button>
+    </div>
+    <div class="toggle-row" style="margin-top:14px;">
+      <div><div class="t-label">Температура снаружи</div></div>
+      <label class="switch"><input type="checkbox" id="tempOutEnabled"><span class="track"></span></label>
+    </div>
+    <div class="seg" id="tempOutModeSeg">
+      <button data-mode="temp">Только t°</button>
+      <button data-mode="temp_hum">t° + влажность</button>
+      <button data-mode="full">t° + влажн. + давл.</button>
+    </div>
+    <div class="toggle-row" style="margin-top:14px;">
+      <div><div class="t-label">Акселерометр</div></div>
+      <label class="switch"><input type="checkbox" id="accelEnabled"><span class="track"></span></label>
+    </div>
+    <div class="toggle-row">
+      <div><div class="t-label">Батарея</div></div>
+      <label class="switch"><input type="checkbox" id="battEnabled"><span class="track"></span></label>
+    </div>
+    <div class="controls"><button class="primary" id="saveSensorsBtn">Готово</button></div>
   </div>
 
-  <div class="section-title">Датчики</div>
-
-  <div class="toggle-row">
-    <div><div class="t-label">Температура внутри</div></div>
-    <label class="switch"><input type="checkbox" id="tempInEnabled"><span class="track"></span></label>
-  </div>
-  <div class="seg" id="tempInModeSeg">
-    <button data-mode="temp">Только t°</button>
-    <button data-mode="temp_hum">t° + влажность</button>
-    <button data-mode="full">t° + влажн. + давл.</button>
-  </div>
-
-  <div class="toggle-row" style="margin-top:14px;">
-    <div><div class="t-label">Температура снаружи</div></div>
-    <label class="switch"><input type="checkbox" id="tempOutEnabled"><span class="track"></span></label>
-  </div>
-  <div class="seg" id="tempOutModeSeg">
-    <button data-mode="temp">Только t°</button>
-    <button data-mode="temp_hum">t° + влажность</button>
-    <button data-mode="full">t° + влажн. + давл.</button>
-  </div>
-
-  <div class="toggle-row" style="margin-top:14px;">
-    <div><div class="t-label">Акселерометр</div></div>
-    <label class="switch"><input type="checkbox" id="accelEnabled"><span class="track"></span></label>
-  </div>
-
-  <div class="toggle-row">
-    <div><div class="t-label">Батарея</div></div>
-    <label class="switch"><input type="checkbox" id="battEnabled"><span class="track"></span></label>
-  </div>
-
-  <div class="controls">
-    <button class="primary" id="saveSettingsBtn">Готово</button>
+  <div class="sheet-view" id="viewDevice">
+    <div class="sheet-head"><div class="back-btn" data-back>‹</div><h2>Устройство</h2></div>
+    <div class="field">
+      <label>Название устройства</label>
+      <input type="text" id="deviceNameInput" maxlength="30">
+    </div>
+    <div class="toggle-row">
+      <div>
+        <div class="t-label">Тестовый режим</div>
+        <div class="t-sub">Случайные данные вместо реального устройства</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="testModeToggle"><span class="track"></span></label>
+    </div>
+    <div class="field" id="dataUrlField" style="margin-top:14px;">
+      <label>Ссылка на реальные данные (JSON)</label>
+      <input type="text" id="dataUrlInput" placeholder="https://raw.githubusercontent.com/ник/repo/main/data.json">
+      <div class="hint">Сюда домашний модуль складывает последние показания.</div>
+    </div>
+    <div class="controls"><button class="primary" id="saveDeviceBtn">Готово</button></div>
   </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+  const ICONS = {
+    thermo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V4a2 2 0 0 0-4 0v10.76a4 4 0 1 0 4 0z"/></svg>',
+    battery: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="7" width="18" height="10" rx="2"/><line x1="22" y1="10.5" x2="22" y2="13.5"/></svg>',
+    pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.3"/></svg>',
+    antenna: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-8"/><circle cx="12" cy="11" r="1.6"/><path d="M8.5 8.3a5 5 0 0 1 7 0"/><path d="M5.5 5.3a9.2 9.2 0 0 1 13 0"/></svg>',
+    gauge: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l4-4.2"/><circle cx="12" cy="16" r="1.1" fill="currentColor" stroke="none"/></svg>',
+    palette: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.96-4.49-9-10-9z"/></svg>',
+    box: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18"/><circle cx="7.3" cy="6" r=".9" fill="currentColor" stroke="none"/></svg>'
+  };
+  function ico(name, color) { return `<span class="ico" style="color:${color}">${ICONS[name]}</span>`; }
+
   const LORA_PRESETS = [
     { id: 'power', name: 'Мощный (основной)', freq: '869.40–869.65 МГц', power: 'до 500 мВт э.и.м.', duty: '≤10% раб. цикла', hasLBT: true },
     { id: 'open', name: 'Без ограничений по времени', freq: '869.70–870.00 МГц', power: 'до 5 мВт э.и.м.', duty: 'без ограничений', hasLBT: false },
@@ -291,9 +355,16 @@
   ];
   const GNSS_LABELS = { gps: 'GPS', gps_glonass: 'GPS + ГЛОНАСС', all: 'GPS + ГЛОНАСС + BeiDou' };
   const TAB_CAPTIONS = ['Основные показатели', 'Ускорение', 'GPS'];
+  const THEME_ORDER = ['calm-light', 'calm-dark', 'google-light', 'google-dark'];
+  const THEME_META = {
+    'calm-light': { name: 'Бежевая', colors: ['#C1653D', '#F7F0E3'] },
+    'calm-dark':  { name: 'Бежевая тёмная', colors: ['#E08A5B', '#231D14'] },
+    'google-light': { name: 'Google', colors: ['#4285F4', '#EA4335', '#FBBC05', '#34A853'] },
+    'google-dark':  { name: 'Google тёмная', colors: ['#8AB4F8', '#F28B82', '#FDD663', '#81C995'] }
+  };
 
   const DEFAULTS = {
-    deviceName: 'Коробочка', testMode: true, dataUrl: '',
+    deviceName: 'Коробочка', testMode: true, dataUrl: '', theme: 'calm-light',
     loraPreset: 'power', lbtMode: false, gnssMode: 'gps',
     sensors: {
       tempIn: { enabled: true, mode: 'full' }, tempOut: { enabled: true, mode: 'full' },
@@ -314,6 +385,9 @@
   }
   function saveSettings() { localStorage.setItem('box-settings', JSON.stringify(settings)); }
   function currentPreset() { return LORA_PRESETS.find(p => p.id === settings.loraPreset) || LORA_PRESETS[0]; }
+  function isGoogle() { return settings.theme.startsWith('google'); }
+  function applyTheme() { document.documentElement.setAttribute('data-theme', settings.theme); }
+  function iconColor(i) { return isGoogle() ? ['var(--amber)','var(--red)','var(--yellow)','var(--teal)'][i % 4] : 'var(--amber)'; }
 
   function randomReading() {
     return {
@@ -325,55 +399,47 @@
       accelX: +((Math.random() - 0.5) * 0.6).toFixed(2), accelY: +((Math.random() - 0.5) * 0.6).toFixed(2), accelZ: +(0.98 + (Math.random() - 0.5) * 0.1).toFixed(2)
     };
   }
-
   function fetchRealReading() {
     if (!settings.dataUrl) return Promise.reject(new Error('Ссылка на данные не задана'));
     const url = settings.dataUrl + (settings.dataUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
     return fetch(url).then(r => { if (!r.ok) throw new Error('Файл недоступен'); return r.json(); });
   }
 
-  /* ---------- MAIN TAB ---------- */
   function renderMain() {
-    const grid = document.getElementById('sensorGrid');
-    grid.innerHTML = '';
+    const grid = document.getElementById('sensorGrid'); grid.innerHTML = '';
     const s = settings.sensors;
-    if (s.tempIn.enabled) grid.appendChild(makeTempCard('Внутри коробки', 'tempIn', s.tempIn.mode, true));
-    if (s.tempOut.enabled) grid.appendChild(makeTempCard('Снаружи', 'tempOut', s.tempOut.mode, false));
+    if (s.tempIn.enabled) grid.appendChild(makeTempCard('Внутри коробки', 'tempIn', s.tempIn.mode, true, 1));
+    if (s.tempOut.enabled) grid.appendChild(makeTempCard('Снаружи', 'tempOut', s.tempOut.mode, false, 0));
     if (s.batt.enabled) grid.appendChild(makeBattCard());
     if (!s.tempIn.enabled && !s.tempOut.enabled && !s.batt.enabled) {
       const note = document.createElement('div'); note.className = 'card wide';
       note.innerHTML = '<div class="empty-note">Датчики выключены в настройках</div>'; grid.appendChild(note);
     }
   }
-  function makeTempCard(title, key, mode, accent) {
+  function makeTempCard(title, key, mode, accent, colorIdx) {
     const card = document.createElement('div'); card.className = 'card wide' + (accent ? ' accent' : '');
     let extra = '';
     if (mode === 'temp_hum' || mode === 'full') extra += `<div class="subrow"><span>Влажность</span><b class="num" id="${key}_hum">--%</b></div>`;
     if (mode === 'full') extra += `<div class="subrow"><span>Давление</span><b class="num" id="${key}_pres">-- гПа</b></div>`;
-    card.innerHTML = `<div class="label">${title}</div><div class="value num" id="${key}_val">--<span class="unit">°C</span></div>${extra}`;
+    card.innerHTML = `<div class="label">${ico('thermo', iconColor(colorIdx))}${title}</div><div class="value num" id="${key}_val">--<span class="unit">°C</span></div>${extra}`;
     return card;
   }
   function makeBattCard() {
     const card = document.createElement('div'); card.className = 'card wide';
-    card.innerHTML = `<div class="label">Батарея</div><div class="battery-row"><div class="battery-track"><div class="battery-fill" id="battFill" style="width:0%"></div></div><span class="num" id="battValue" style="font-size:13px;">--%</span></div>`;
+    card.innerHTML = `<div class="label">${ico('battery', iconColor(3))}Батарея</div><div class="battery-row"><div class="battery-track"><div class="battery-fill" id="battFill" style="width:0%"></div></div><span class="num" id="battValue" style="font-size:13px;">--%</span></div>`;
     return card;
   }
 
-  /* ---------- ACCEL TAB ---------- */
   function renderAccel() {
     const wrap = document.getElementById('accelBigWrap');
     if (!settings.sensors.accel.enabled) { wrap.innerHTML = '<div class="empty-note">Акселерометр выключен в настройках</div>'; return; }
     wrap.innerHTML = `
       <svg width="220" height="220" viewBox="0 0 200 200">
-        <circle cx="100" cy="100" r="92" fill="none" stroke="#2A2F31" stroke-width="1.5"/>
-        <circle cx="100" cy="100" r="46" fill="none" stroke="#2A2F31" stroke-width="1"/>
-        <line x1="100" y1="10" x2="100" y2="190" stroke="#2A2F31" stroke-width="1"/>
-        <line x1="10" y1="100" x2="190" y2="100" stroke="#2A2F31" stroke-width="1"/>
-        <text x="100" y="24" text-anchor="middle" fill="#5B6265" font-size="10">вперёд</text>
-        <text x="100" y="182" text-anchor="middle" fill="#5B6265" font-size="10">назад</text>
-        <text x="20" y="104" text-anchor="middle" fill="#5B6265" font-size="10">←</text>
-        <text x="180" y="104" text-anchor="middle" fill="#5B6265" font-size="10">→</text>
-        <circle id="accelDot" cx="100" cy="100" r="9" fill="#FF9500"/>
+        <circle class="accel-svg-line" cx="100" cy="100" r="92" fill="none" stroke-width="1.5"/>
+        <circle class="accel-svg-line" cx="100" cy="100" r="46" fill="none" stroke-width="1"/>
+        <line class="accel-svg-line" x1="100" y1="10" x2="100" y2="190" stroke-width="1"/>
+        <line class="accel-svg-line" x1="10" y1="100" x2="190" y2="100" stroke-width="1"/>
+        <circle id="accelDot" cx="100" cy="100" r="9"/>
       </svg>
       <div class="zbar-wrap px">
         <span class="zbar-label">низ</span>
@@ -387,15 +453,14 @@
       </div>`;
   }
 
-  /* ---------- GPS TAB ---------- */
   function renderGps() {
     const wrap = document.getElementById('gpsBigWrap');
     if (!settings.sensors.gps.enabled) { wrap.innerHTML = '<div class="empty-note">GPS выключен в настройках</div>'; mapInstance = null; return; }
     wrap.innerHTML = `
       <div id="mapBig" class="gps-map-big"></div>
       <div class="gps-stats">
-        <div class="card"><div class="label">Широта</div><div class="value num" id="latBig" style="font-size:16px;">--</div></div>
-        <div class="card"><div class="label">Долгота</div><div class="value num" id="lonBig" style="font-size:16px;">--</div></div>
+        <div class="card"><div class="label">${ico('pin', iconColor(2))}Широта</div><div class="value num" id="latBig" style="font-size:16px;">--</div></div>
+        <div class="card"><div class="label">${ico('pin', iconColor(2))}Долгота</div><div class="value num" id="lonBig" style="font-size:16px;">--</div></div>
         <div class="card"><div class="label">Высота над морем</div><div class="value num" id="altBig">--<span class="unit">м</span></div></div>
         <div class="card"><div class="label">Спутники</div><div class="value num" id="satBig">--</div></div>
       </div>
@@ -431,7 +496,6 @@
       }
       const zf = document.getElementById('zbarFill');
       if (zf) {
-        const track = zf.parentElement.getBoundingClientRect();
         const pct = Math.max(-1, Math.min(1, (data.accelZ - 1)));
         const half = 50;
         if (pct >= 0) { zf.style.left = half + '%'; zf.style.width = (pct * half) + '%'; }
@@ -455,7 +519,6 @@
     const card = document.querySelector('.signal-card');
     card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash');
   }
-
   function setText(id, html, isHtml) { const el = document.getElementById(id); if (!el) return; if (isHtml) el.innerHTML = html; else el.textContent = html; }
 
   function updateBigMap(lat, lon) {
@@ -463,23 +526,28 @@
     if (!mapInstance) {
       mapInstance = L.map('mapBig', { zoomControl: false, attributionControl: false }).setView([lat, lon], 15);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstance);
-      mapMarker = L.circleMarker([lat, lon], { radius: 8, color: '#FF9500', fillColor: '#FF9500', fillOpacity: 0.9 }).addTo(mapInstance);
+      mapMarker = L.circleMarker([lat, lon], { radius: 8, color: '#4285F4', fillColor: '#4285F4', fillOpacity: 0.9 }).addTo(mapInstance);
     } else {
       mapInstance.setView([lat, lon]); mapMarker.setLatLng([lat, lon]);
       setTimeout(() => mapInstance.invalidateSize(), 50);
     }
   }
 
-  function renderAllTabs() { renderMain(); renderAccel(); renderGps(); }
+  function renderSignalLabel() { document.getElementById('signalLabel').innerHTML = ico('antenna', iconColor(0)) + 'Сигнал LoRa'; }
+  function renderAllTabs() { renderMain(); renderAccel(); renderGps(); renderSignalLabel(); }
 
   function refresh() {
-    if (settings.testMode) applyReading(randomReading());
-    else fetchRealReading().then(applyReading).catch(() => {
-      document.getElementById('lastUpdate').textContent = 'нет связи с устройством';
-      document.getElementById('statusDot').classList.add('err');
-    });
+    const spinner = document.getElementById('refreshSpinner');
+    spinner.classList.add('loading');
+    setTimeout(() => {
+      if (settings.testMode) applyReading(randomReading());
+      else fetchRealReading().then(applyReading).catch(() => {
+        document.getElementById('lastUpdate').textContent = 'нет связи с устройством';
+        document.getElementById('statusDot').classList.add('err');
+      });
+      spinner.classList.remove('loading');
+    }, isGoogle() ? 450 : 0);
   }
-
   document.getElementById('refreshBtn').addEventListener('click', refresh);
   document.getElementById('pingBtn').addEventListener('click', () => {
     const pill = document.querySelector('.status-pill'); pill.style.opacity = '0.4'; setTimeout(() => pill.style.opacity = '1', 250);
@@ -497,25 +565,55 @@
     document.getElementById('loraFreqLabel').textContent = 'SX1262 · ' + p.freq + (p.hasLBT && settings.lbtMode ? ' · LBT+AFA' : '');
   }
 
-  /* ---------- Tabs swipe ---------- */
   const tabsScroll = document.getElementById('tabsScroll');
   const dots = document.querySelectorAll('.td');
   const caption = document.getElementById('tabCaption');
-  function setActiveTab(i) {
-    dots.forEach((d, idx) => d.classList.toggle('active', idx === i));
-    caption.textContent = TAB_CAPTIONS[i];
-  }
-  tabsScroll.addEventListener('scroll', () => {
-    const i = Math.round(tabsScroll.scrollLeft / tabsScroll.clientWidth);
-    setActiveTab(Math.max(0, Math.min(2, i)));
-  });
-  dots.forEach(d => d.addEventListener('click', () => {
-    const i = +d.dataset.i;
-    tabsScroll.scrollTo({ left: i * tabsScroll.clientWidth, behavior: 'smooth' });
-  }));
+  function setActiveTab(i) { dots.forEach((d, idx) => d.classList.toggle('active', idx === i)); caption.textContent = TAB_CAPTIONS[i]; }
+  tabsScroll.addEventListener('scroll', () => { const i = Math.round(tabsScroll.scrollLeft / tabsScroll.clientWidth); setActiveTab(Math.max(0, Math.min(2, i))); });
+  dots.forEach(d => d.addEventListener('click', () => tabsScroll.scrollTo({ left: (+d.dataset.i) * tabsScroll.clientWidth, behavior: 'smooth' })));
 
-  /* ---------- Settings sheet ---------- */
-  const overlay = document.getElementById('overlay'), sheet = document.getElementById('sheet');
+  document.getElementById('themeQuickBtn').addEventListener('click', () => {
+    const i = THEME_ORDER.indexOf(settings.theme);
+    settings.theme = THEME_ORDER[(i + 1) % THEME_ORDER.length];
+    saveSettings(); applyTheme(); renderAllTabs();
+  });
+
+  const CATEGORIES = [
+    { id: 'theme', name: 'Тема', sub: '', icon: 'palette' },
+    { id: 'lora', name: 'Мощность модуля', sub: 'Частота и режим', icon: 'antenna' },
+    { id: 'gps', name: 'GPS / ГНСС', sub: 'Координаты', icon: 'pin' },
+    { id: 'sensors', name: 'Датчики', sub: 'Температура, акселерометр', icon: 'thermo' },
+    { id: 'device', name: 'Устройство', sub: 'Название, тест-режим', icon: 'box' }
+  ];
+  function renderCatGrid() {
+    CATEGORIES[0].sub = THEME_META[settings.theme] ? THEME_META[settings.theme].name : '';
+    const grid = document.getElementById('catGrid'); grid.innerHTML = '';
+    CATEGORIES.forEach((c, i) => {
+      const tile = document.createElement('div'); tile.className = 'cat-tile';
+      const col = isGoogle() ? ['var(--amber)','var(--red)','var(--yellow)','var(--teal)','var(--amber)'][i] : 'var(--amber)';
+      tile.innerHTML = `<div class="cat-ico" style="background:${col}22;color:${col}">${ICONS[c.icon]}</div><div><div class="cat-name">${c.name}</div><div class="cat-sub">${c.sub}</div></div>`;
+      tile.addEventListener('click', () => openSheetView(c.id));
+      grid.appendChild(tile);
+    });
+  }
+  function openSheetView(id) {
+    document.querySelectorAll('.sheet-view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view' + id.charAt(0).toUpperCase() + id.slice(1)).classList.add('active');
+  }
+  document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => openSheetView('home')));
+
+  let pendingTheme = settings.theme;
+  function renderThemeGrid() {
+    const grid = document.getElementById('themeGrid'); grid.innerHTML = '';
+    THEME_ORDER.forEach(id => {
+      const meta = THEME_META[id];
+      const el = document.createElement('div'); el.className = 'theme-opt' + (id === pendingTheme ? ' active' : '');
+      el.innerHTML = `<div class="t-swatch">${meta.colors.map(c => `<span style="background:${c}"></span>`).join('')}</div><div class="t-name">${meta.name}</div>`;
+      el.addEventListener('click', () => { document.documentElement.setAttribute('data-theme', id); pendingTheme = id; renderThemeGrid(); });
+      grid.appendChild(el);
+    });
+  }
+
   function renderPresets() {
     const wrap = document.getElementById('loraPresets'); wrap.innerHTML = '';
     LORA_PRESETS.forEach(p => {
@@ -527,18 +625,14 @@
       wrap.appendChild(el);
     });
   }
-  function updateLbtRow() {
-    document.getElementById('lbtRow').style.display = currentPreset().hasLBT ? 'flex' : 'none';
-  }
+  function updateLbtRow() { document.getElementById('lbtRow').style.display = currentPreset().hasLBT ? 'flex' : 'none'; }
   function setSeg(segId, mode) { document.querySelectorAll('#' + segId + ' button').forEach(b => b.classList.toggle('active', b.dataset.mode === mode)); }
-  document.querySelectorAll('.seg').forEach(seg => seg.addEventListener('click', (e) => {
-    const btn = e.target.closest('button'); if (!btn) return; setSeg(seg.id, btn.dataset.mode);
-  }));
-  document.getElementById('testModeToggle').addEventListener('change', (e) => {
-    document.getElementById('dataUrlField').style.display = e.target.checked ? 'none' : 'block';
-  });
+  document.querySelectorAll('.seg').forEach(seg => seg.addEventListener('click', (e) => { const btn = e.target.closest('button'); if (!btn) return; setSeg(seg.id, btn.dataset.mode); }));
+  document.getElementById('testModeToggle').addEventListener('change', (e) => { document.getElementById('dataUrlField').style.display = e.target.checked ? 'none' : 'block'; });
 
+  const overlay = document.getElementById('overlay'), sheet = document.getElementById('sheet');
   function openSheet() {
+    pendingTheme = settings.theme;
     document.getElementById('deviceNameInput').value = settings.deviceName;
     document.getElementById('testModeToggle').checked = settings.testMode;
     document.getElementById('dataUrlInput').value = settings.dataUrl;
@@ -552,31 +646,41 @@
     setSeg('tempInModeSeg', settings.sensors.tempIn.mode);
     setSeg('tempOutModeSeg', settings.sensors.tempOut.mode);
     setSeg('gnssSeg', settings.gnssMode);
-    renderPresets(); updateLbtRow();
+    renderCatGrid(); renderThemeGrid(); renderPresets(); updateLbtRow();
+    openSheetView('home');
     overlay.classList.add('open'); sheet.classList.add('open');
   }
-  function closeSheet() { overlay.classList.remove('open'); sheet.classList.remove('open'); }
+  function closeSheet() {
+    document.documentElement.setAttribute('data-theme', settings.theme);
+    overlay.classList.remove('open'); sheet.classList.remove('open');
+  }
   document.getElementById('settingsBtn').addEventListener('click', openSheet);
   overlay.addEventListener('click', closeSheet);
 
-  document.getElementById('saveSettingsBtn').addEventListener('click', () => {
-    settings.deviceName = document.getElementById('deviceNameInput').value.trim() || 'Коробочка';
-    settings.testMode = document.getElementById('testModeToggle').checked;
-    settings.dataUrl = document.getElementById('dataUrlInput').value.trim();
-    settings.lbtMode = document.getElementById('lbtToggle').checked;
-    settings.gnssMode = document.querySelector('#gnssSeg button.active').dataset.mode;
+  function backHomeAndSave() { saveSettings(); applyTheme(); refreshChrome(); renderAllTabs(); refresh(); openSheetView('home'); renderCatGrid(); }
+  document.getElementById('saveThemeBtn').addEventListener('click', () => { settings.theme = pendingTheme; backHomeAndSave(); });
+  document.getElementById('saveLoraBtn').addEventListener('click', () => { settings.lbtMode = document.getElementById('lbtToggle').checked; backHomeAndSave(); });
+  document.getElementById('saveGpsBtn').addEventListener('click', () => {
     settings.sensors.gps.enabled = document.getElementById('gpsEnabled').checked;
+    settings.gnssMode = document.querySelector('#gnssSeg button.active').dataset.mode;
+    backHomeAndSave();
+  });
+  document.getElementById('saveSensorsBtn').addEventListener('click', () => {
     settings.sensors.tempIn.enabled = document.getElementById('tempInEnabled').checked;
     settings.sensors.tempOut.enabled = document.getElementById('tempOutEnabled').checked;
     settings.sensors.accel.enabled = document.getElementById('accelEnabled').checked;
     settings.sensors.batt.enabled = document.getElementById('battEnabled').checked;
     settings.sensors.tempIn.mode = document.querySelector('#tempInModeSeg button.active').dataset.mode;
     settings.sensors.tempOut.mode = document.querySelector('#tempOutModeSeg button.active').dataset.mode;
-
-    saveSettings(); refreshChrome(); renderAllTabs(); refresh(); closeSheet();
+    backHomeAndSave();
+  });
+  document.getElementById('saveDeviceBtn').addEventListener('click', () => {
+    settings.deviceName = document.getElementById('deviceNameInput').value.trim() || 'Коробочка';
+    settings.testMode = document.getElementById('testModeToggle').checked;
+    settings.dataUrl = document.getElementById('dataUrlInput').value.trim();
+    backHomeAndSave();
   });
 
-  /* ---------- Telegram fullscreen ---------- */
   function applyTelegramChrome() {
     const tg = window.Telegram && window.Telegram.WebApp;
     if (!tg) return;
@@ -591,6 +695,7 @@
     if (tg.onEvent) { tg.onEvent('safeAreaChanged', updateSafeArea); tg.onEvent('fullscreenChanged', updateSafeArea); }
   }
 
+  applyTheme();
   refreshChrome();
   renderAllTabs();
   refresh();
