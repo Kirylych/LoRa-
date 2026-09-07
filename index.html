@@ -263,7 +263,7 @@
       <button class="primary" id="pingBtn">Проверить связь</button>
     </div>
     <div class="footnote" id="footnote">Тестовые данные. Реальные показания появятся после подключения коробочки и приёмника.</div>
-    <div style="text-align:center;font-size:10px;color:var(--text-dim);margin-top:10px;">build 17 · 07.09.2026</div>
+    <div style="text-align:center;font-size:10px;color:var(--text-dim);margin-top:10px;">build 18 · 07.09.2026</div>
   </div>
 </div>
 
@@ -496,13 +496,15 @@
 
   function saveSettings() {
     localStorage.setItem('box-settings', JSON.stringify(settings));
+    localStorage.setItem('box-settings-ts', String(Date.now()));
     const base = serverBase();
     if (!base) return;
     fetch(base + '/api/settings/' + SERVER_DEVICE_ID, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'X-API-Key': settings.apiKey || '' },
       body: JSON.stringify(settings)
-    }).catch(() => {}); // офлайн/сервер недоступен — просто останется локальная копия
+    }).then(r => { if (!r.ok) console.warn('Сохранение на сервер не удалось, статус', r.status); })
+      .catch(() => console.warn('Сохранение на сервер не удалось — сеть недоступна'));
   }
   function serverBase() {
     if (settings.dataSource === 'cloudflare' && settings.dataUrl) return settings.dataUrl.replace(/\/$/, '');
@@ -518,11 +520,15 @@
       .then(resp => {
         const remote = resp && resp.data;
         if (!remote || !Object.keys(remote).length) return;
+        const localTs = Number(localStorage.getItem('box-settings-ts') || 0);
+        const serverTs = Number(resp.updated_at || 0);
+        if (serverTs <= localTs) return; // локальная копия новее или того же возраста — не трогаем её
         settings = Object.assign({}, DEFAULTS, remote, {
           sensors: Object.assign({}, DEFAULTS.sensors, remote.sensors),
           guestVisibility: Object.assign({}, DEFAULTS.guestVisibility, remote.guestVisibility)
         });
         localStorage.setItem('box-settings', JSON.stringify(settings));
+        localStorage.setItem('box-settings-ts', String(serverTs));
         applyTheme(); refreshChrome(); renderAllTabs(); refresh();
       })
       .catch(() => {});
