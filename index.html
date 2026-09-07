@@ -263,7 +263,7 @@
       <button class="primary" id="pingBtn">Проверить связь</button>
     </div>
     <div class="footnote" id="footnote">Тестовые данные. Реальные показания появятся после подключения коробочки и приёмника.</div>
-    <div style="text-align:center;font-size:10px;color:var(--text-dim);margin-top:10px;">build 15 · 05.09.2026</div>
+    <div style="text-align:center;font-size:10px;color:var(--text-dim);margin-top:10px;">build 16 · 07.09.2026</div>
   </div>
 </div>
 
@@ -486,7 +486,44 @@
       return Object.assign({}, DEFAULTS, parsed, { sensors: Object.assign({}, DEFAULTS.sensors, parsed.sensors) });
     } catch (e) { return JSON.parse(JSON.stringify(DEFAULTS)); }
   }
-  function saveSettings() { localStorage.setItem('box-settings', JSON.stringify(settings)); }
+  function saveSettings() {
+    localStorage.setItem('box-settings', JSON.stringify(settings));
+    const base = serverBase();
+    if (!base) return;
+    fetch(base + '/settings?uid=' + getUserId(), {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(settings)
+    }).catch(() => {}); // офлайн/сервер недоступен — просто останется локальная копия
+  }
+  function serverBase() {
+    if (settings.dataSource === 'cloudflare' && settings.dataUrl) return settings.dataUrl.replace(/\/$/, '');
+    return null;
+  }
+  function getUserId() {
+    try {
+      const tg = window.Telegram && window.Telegram.WebApp;
+      const u = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+      if (u && u.id) return String(u.id);
+    } catch (e) {}
+    let id = localStorage.getItem('box-anon-id');
+    if (!id) { id = 'anon-' + Math.random().toString(36).slice(2, 10); localStorage.setItem('box-anon-id', id); }
+    return id;
+  }
+  function loadSettingsFromServer() {
+    const base = serverBase();
+    if (!base) return;
+    fetch(base + '/settings?uid=' + getUserId())
+      .then(r => r.ok ? r.json() : null)
+      .then(remote => {
+        if (!remote) return;
+        settings = Object.assign({}, DEFAULTS, remote, {
+          sensors: Object.assign({}, DEFAULTS.sensors, remote.sensors),
+          guestVisibility: Object.assign({}, DEFAULTS.guestVisibility, remote.guestVisibility)
+        });
+        localStorage.setItem('box-settings', JSON.stringify(settings));
+        applyTheme(); refreshChrome(); renderAllTabs(); refresh();
+      })
+      .catch(() => {});
+  }
   function currentPreset() { return LORA_PRESETS.find(p => p.id === settings.loraPreset) || LORA_PRESETS[0]; }
   function isGoogle() { return settings.theme.startsWith('google'); }
   function applyTheme() { document.documentElement.setAttribute('data-theme', settings.theme); }
@@ -954,6 +991,7 @@
   renderAllTabs();
   refresh();
   applyTelegramChrome();
+  loadSettingsFromServer();
 </script>
 </body>
 </html>
