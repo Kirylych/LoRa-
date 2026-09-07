@@ -263,7 +263,7 @@
       <button class="primary" id="pingBtn">Проверить связь</button>
     </div>
     <div class="footnote" id="footnote">Тестовые данные. Реальные показания появятся после подключения коробочки и приёмника.</div>
-    <div style="text-align:center;font-size:10px;color:var(--text-dim);margin-top:10px;">build 16 · 07.09.2026</div>
+    <div style="text-align:center;font-size:10px;color:var(--text-dim);margin-top:10px;">build 17 · 07.09.2026</div>
   </div>
 </div>
 
@@ -379,6 +379,12 @@
       <div class="hint">Сюда домашний модуль складывает последние показания.</div>
     </div>
 
+    <div class="field" id="apiKeyField">
+      <label>API-ключ сервера (X-API-Key)</label>
+      <input type="text" id="apiKeyInput" placeholder="тот же ключ, что задан в env.API_KEY на Cloudflare">
+      <div class="hint">Обязателен для Cloudflare-сервера — без него он отклоняет все запросы. Этот ключ нужно ввести отдельно на каждом устройстве (телефоне, компьютере) — сам он не синхронизируется, это и есть тот самый секрет, который открывает доступ к остальной синхронизации.</div>
+    </div>
+
     <div class="field">
       <label>Отступ для полноэкранного режима</label>
       <div class="seg" id="fsOffsetSeg">
@@ -461,7 +467,7 @@
   // ==================== ДАННЫЕ / НАСТРОЙКИ ПО УМОЛЧАНИЮ ====================
   const DEFAULTS = {
     deviceName: 'Коробочка', testMode: true, dataUrl: '', dataSource: 'github', fsOffset: 'off', theme: 'calm-light',
-    loraPreset: 'power', lbtMode: false, gnssMode: 'gps', adminPin: '', guestPin: '', hideGps: false,
+    loraPreset: 'power', lbtMode: false, gnssMode: 'gps', adminPin: '', guestPin: '', hideGps: false, apiKey: '',
     guestVisibility: { theme: true, device: false, lora: false, gps: true, sensors: true, updates: false },
     sensors: {
       tempIn: { enabled: true, mode: 'full' }, tempOut: { enabled: true, mode: 'full' },
@@ -486,35 +492,32 @@
       return Object.assign({}, DEFAULTS, parsed, { sensors: Object.assign({}, DEFAULTS.sensors, parsed.sensors) });
     } catch (e) { return JSON.parse(JSON.stringify(DEFAULTS)); }
   }
+  const SERVER_DEVICE_ID = 'miniapp-settings'; // фиксированный id для настроек самого mini app (не путать с реальными base/box)
+
   function saveSettings() {
     localStorage.setItem('box-settings', JSON.stringify(settings));
     const base = serverBase();
     if (!base) return;
-    fetch(base + '/settings?uid=' + getUserId(), {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(settings)
+    fetch(base + '/api/settings/' + SERVER_DEVICE_ID, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': settings.apiKey || '' },
+      body: JSON.stringify(settings)
     }).catch(() => {}); // офлайн/сервер недоступен — просто останется локальная копия
   }
   function serverBase() {
     if (settings.dataSource === 'cloudflare' && settings.dataUrl) return settings.dataUrl.replace(/\/$/, '');
     return null;
   }
-  function getUserId() {
-    try {
-      const tg = window.Telegram && window.Telegram.WebApp;
-      const u = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
-      if (u && u.id) return String(u.id);
-    } catch (e) {}
-    let id = localStorage.getItem('box-anon-id');
-    if (!id) { id = 'anon-' + Math.random().toString(36).slice(2, 10); localStorage.setItem('box-anon-id', id); }
-    return id;
-  }
   function loadSettingsFromServer() {
     const base = serverBase();
     if (!base) return;
-    fetch(base + '/settings?uid=' + getUserId())
+    fetch(base + '/api/settings/' + SERVER_DEVICE_ID, {
+      headers: { 'X-API-Key': settings.apiKey || '' }
+    })
       .then(r => r.ok ? r.json() : null)
-      .then(remote => {
-        if (!remote) return;
+      .then(resp => {
+        const remote = resp && resp.data;
+        if (!remote || !Object.keys(remote).length) return;
         settings = Object.assign({}, DEFAULTS, remote, {
           sensors: Object.assign({}, DEFAULTS.sensors, remote.sensors),
           guestVisibility: Object.assign({}, DEFAULTS.guestVisibility, remote.guestVisibility)
@@ -851,6 +854,7 @@
     document.getElementById('deviceNameInput').value = settings.deviceName;
     document.getElementById('testModeToggle').checked = settings.testMode;
     document.getElementById('dataUrlInput').value = settings.dataUrl;
+    document.getElementById('apiKeyInput').value = settings.apiKey;
     document.getElementById('dataUrlField').style.display = settings.testMode ? 'none' : 'block';
     setSeg('dataSourceSeg', settings.dataSource);
     setSeg('fsOffsetSeg', settings.fsOffset);
@@ -899,6 +903,7 @@
     settings.deviceName = document.getElementById('deviceNameInput').value.trim() || 'Коробочка';
     settings.testMode = document.getElementById('testModeToggle').checked;
     settings.dataUrl = document.getElementById('dataUrlInput').value.trim();
+    settings.apiKey = document.getElementById('apiKeyInput').value.trim();
     settings.dataSource = document.querySelector('#dataSourceSeg button.active').dataset.mode;
     settings.fsOffset = document.querySelector('#fsOffsetSeg button.active').dataset.mode;
     updateSafeTop();
