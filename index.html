@@ -263,7 +263,7 @@
       <button class="primary" id="pingBtn">Проверить связь</button>
     </div>
     <div class="footnote" id="footnote">Тестовые данные. Реальные показания появятся после подключения коробочки и приёмника.</div>
-    <div style="text-align:center;font-size:10px;color:var(--text-dim);margin-top:10px;">build 18 · 07.09.2026</div>
+    <div style="text-align:center;font-size:10px;color:var(--text-dim);margin-top:10px;">build 19 · 07.09.2026</div>
   </div>
 </div>
 
@@ -434,6 +434,13 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+  // ==================== НАСТРОЙКИ СЕРВЕРА — впиши сюда свои значения ====================
+  // Ссылка на твой Cloudflare Worker (без слэша на конце), например: https://box-server.твой-ник.workers.dev
+  const SERVER_URL = 'http://esp32-box-server.kirylych.workers.dev';
+  // Тот же ключ, что стоит в env.API_KEY на Cloudflare
+  const SERVER_API_KEY = '176034';
+  // ==========================================================================================
+
   // ==================== ИКОНКИ ====================
   const ICONS = {
     thermo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V4a2 2 0 0 0-4 0v10.76a4 4 0 1 0 4 0z"/></svg>',
@@ -466,7 +473,11 @@
 
   // ==================== ДАННЫЕ / НАСТРОЙКИ ПО УМОЛЧАНИЮ ====================
   const DEFAULTS = {
-    deviceName: 'Коробочка', testMode: true, dataUrl: '', dataSource: 'github', fsOffset: 'off', theme: 'calm-light',
+    deviceName: 'Коробочка', testMode: true,
+    dataUrl: SERVER_URL !== 'ВСТАВЬ_СЮДА_ССЫЛКУ_НА_WORKER' ? SERVER_URL : '',
+    dataSource: SERVER_URL !== 'ВСТАВЬ_СЮДА_ССЫЛКУ_НА_WORKER' ? 'cloudflare' : 'github',
+    apiKey: SERVER_API_KEY !== 'ВСТАВЬ_СЮДА_КЛЮЧ' ? SERVER_API_KEY : '',
+    fsOffset: 'off', theme: 'calm-light',
     loraPreset: 'power', lbtMode: false, gnssMode: 'gps', adminPin: '', guestPin: '', hideGps: false, apiKey: '',
     guestVisibility: { theme: true, device: false, lora: false, gps: true, sensors: true, updates: false },
     sensors: {
