@@ -263,7 +263,6 @@
       <button class="primary" id="pingBtn">Проверить связь</button>
     </div>
     <div class="footnote" id="footnote">Тестовые данные. Реальные показания появятся после подключения коробочки и приёмника.</div>
-    <div style="text-align:center;font-size:10px;color:var(--text-dim);margin-top:10px;">build 19 · 07.09.2026</div>
   </div>
 </div>
 
@@ -370,19 +369,16 @@
       <label class="switch"><input type="checkbox" id="testModeToggle"><span class="track"></span></label>
     </div>
     <div class="field" id="dataUrlField" style="margin-top:14px;">
-      <label>Способ получения данных</label>
-      <div class="seg" id="dataSourceSeg">
-        <button data-mode="github">GitHub (JSON)</button>
-        <button data-mode="cloudflare">Cloudflare (сервер)</button>
+      <label>Сервер</label>
+      <div class="seg" id="serverModeSeg">
+        <button data-mode="default">Наш сервер (по умолчанию)</button>
+        <button data-mode="alt">Альтернативный сайт</button>
       </div>
-      <input type="text" id="dataUrlInput" placeholder="https://raw.githubusercontent.com/ник/repo/main/data.json" style="margin-top:8px;">
-      <div class="hint">Сюда домашний модуль складывает последние показания.</div>
-    </div>
-
-    <div class="field" id="apiKeyField">
-      <label>API-ключ сервера (X-API-Key)</label>
-      <input type="text" id="apiKeyInput" placeholder="тот же ключ, что задан в env.API_KEY на Cloudflare">
-      <div class="hint">Обязателен для Cloudflare-сервера — без него он отклоняет все запросы. Этот ключ нужно ввести отдельно на каждом устройстве (телефоне, компьютере) — сам он не синхронизируется, это и есть тот самый секрет, который открывает доступ к остальной синхронизации.</div>
+      <div id="altServerFields" style="display:none;margin-top:8px;">
+        <input type="text" id="altUrlInput" placeholder="Адрес альтернативного сервера">
+        <input type="text" id="altKeyInput" placeholder="Ключ доступа" style="margin-top:8px;">
+      </div>
+      <div class="hint">По умолчанию используется наш сервер — его адрес и ключ нигде в интерфейсе не показываются.</div>
     </div>
 
     <div class="field">
@@ -399,18 +395,22 @@
 
   <div class="sheet-view" id="viewSecurity">
     <div class="sheet-head"><div class="back-btn" data-back>‹</div><h2>Безопасность</h2></div>
+    <div class="section-note">Полный доступ (разработчик) задаётся в коде — см. <code>ADMIN_PASSWORD</code> в начале файла, тут его не сменить.</div>
+
+    <div class="section-title">Гость 1</div>
     <div class="field">
-      <label>Пароль администратора</label>
-      <input type="text" id="adminPinInput" placeholder="Оставь пустым, чтобы отключить" maxlength="12">
-      <div class="hint">Полный доступ ко всем разделам. Это простая защита от «друг потыкал кнопки», а не от взлома — код открыт, обойти технически можно.</div>
+      <label>Пароль</label>
+      <input type="text" id="guest0PinInput" placeholder="Оставь пустым, чтобы отключить этот пропуск" maxlength="12">
     </div>
+    <div id="guest0VisList"></div>
+
+    <div class="section-title" style="margin-top:22px;">Гость 2</div>
     <div class="field">
-      <label>Пароль гостя (необязательно)</label>
-      <input type="text" id="guestPinInput" placeholder="Оставь пустым, чтобы не выдавать гостевой доступ" maxlength="12">
-      <div class="hint">Открывает только те разделы, что отмечены ниже. Раздел «Безопасность» гостю не показывается никогда.</div>
+      <label>Пароль</label>
+      <input type="text" id="guest1PinInput" placeholder="Оставь пустым, чтобы отключить этот пропуск" maxlength="12">
     </div>
-    <div class="section-title">Что видно гостю</div>
-    <div id="guestVisList"></div>
+    <div id="guest1VisList"></div>
+
     <div class="toggle-row" style="margin-top:14px;">
       <div><div class="t-label">Скрывать координаты GPS</div><div class="t-sub">На вкладке GPS вместо точных координат и карты — заглушка</div></div>
       <label class="switch"><input type="checkbox" id="hideGpsToggle"><span class="track"></span></label>
@@ -430,6 +430,25 @@
     </div>
     <div id="updatesList" style="display:none;"></div>
   </div>
+
+  <div class="sheet-view" id="viewAbout">
+    <div class="sheet-head"><div class="back-btn" data-back>‹</div><h2>О системе</h2></div>
+    <div class="card wide">
+      <div class="subrow"><span>Mini app</span><b id="aboutBuild">build — · —</b></div>
+      <div class="subrow"><span>База</span><b>ещё не подключена</b></div>
+      <div class="subrow"><span>Коробочка</span><b>ещё не подключена</b></div>
+    </div>
+    <div class="hint" style="margin-top:10px;">Когда база и коробочка появятся и подключатся к серверу — здесь будут их версии прошивки и статус связи.</div>
+  </div>
+
+  <div class="sheet-view" id="viewAdminAccess">
+    <div class="sheet-head"><div class="back-btn" data-back>‹</div><h2>Доступ администратора</h2></div>
+    <div class="card wide">
+      <div class="subrow"><span>Текущий сеанс</span><b id="adminAccessStatus">—</b></div>
+    </div>
+    <div class="hint" style="margin-top:10px;">Пароль администратора задаётся только в коде (константа <code>ADMIN_PASSWORD</code> в начале файла) — через интерфейс его не сменить и не увидеть.</div>
+    <div class="controls" style="margin-top:16px;"><button id="logoutBtn">Выйти / заблокировать снова</button></div>
+  </div>
   </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -439,6 +458,11 @@
   const SERVER_URL = 'http://esp32-box-server.kirylych.workers.dev';
   // Тот же ключ, что стоит в env.API_KEY на Cloudflare
   const SERVER_API_KEY = '176034';
+  // Пароль разработчика — полный доступ, задаётся только тут, через код (не меняется в интерфейсе)
+  const ADMIN_PASSWORD = '176034';
+  // Номер сборки — обновляй при каждой новой версии, чтобы видеть в разделе "О системе", что реально загружено
+  const BUILD_NUMBER = '21';
+  const BUILD_DATE = '07.09.2026';
   // ==========================================================================================
 
   // ==================== ИКОНКИ ====================
@@ -451,7 +475,8 @@
     palette: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.96-4.49-9-10-9z"/></svg>',
     box: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18"/><circle cx="7.3" cy="6" r=".9" fill="currentColor" stroke="none"/></svg>',
     lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
-    update: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>'
+    update: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>',
+    gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
   };
   function ico(name, color) { return `<span class="ico" style="color:${color}">${ICONS[name]}</span>`; }
 
@@ -474,22 +499,25 @@
   // ==================== ДАННЫЕ / НАСТРОЙКИ ПО УМОЛЧАНИЮ ====================
   const DEFAULTS = {
     deviceName: 'Коробочка', testMode: true,
-    dataUrl: SERVER_URL !== 'ВСТАВЬ_СЮДА_ССЫЛКУ_НА_WORKER' ? SERVER_URL : '',
-    dataSource: SERVER_URL !== 'ВСТАВЬ_СЮДА_ССЫЛКУ_НА_WORKER' ? 'cloudflare' : 'github',
-    apiKey: SERVER_API_KEY !== 'ВСТАВЬ_СЮДА_КЛЮЧ' ? SERVER_API_KEY : '',
+    useAltServer: false, altUrl: '', altApiKey: '',
     fsOffset: 'off', theme: 'calm-light',
-    loraPreset: 'power', lbtMode: false, gnssMode: 'gps', adminPin: '', guestPin: '', hideGps: false, apiKey: '',
-    guestVisibility: { theme: true, device: false, lora: false, gps: true, sensors: true, updates: false },
+    loraPreset: 'power', lbtMode: false, gnssMode: 'gps', hideGps: false,
+    guests: [
+      { pin: '', visibility: { theme: true, device: false, lora: false, gps: true, sensors: true, updates: false } },
+      { pin: '', visibility: { theme: true, device: false, lora: false, gps: true, sensors: true, updates: false } }
+    ],
     sensors: {
       tempIn: { enabled: true, mode: 'full' }, tempOut: { enabled: true, mode: 'full' },
       accel: { enabled: true }, gps: { enabled: true }, batt: { enabled: true }
     }
   };
   let sessionAccess = null; // null = не разблокировано, 'admin' | 'guest'
+  let sessionGuestIndex = -1;
   function canShowCategory(id) {
     if (sessionAccess === 'admin') return true;
-    if (id === 'security') return false; // раздел безопасности гостю не показываем никогда
-    return !!settings.guestVisibility[id];
+    if (id === 'security' || id === 'adminAccess') return false; // эти разделы гостю не показываем никогда
+    if (sessionAccess === 'guest' && sessionGuestIndex >= 0) return !!settings.guests[sessionGuestIndex].visibility[id];
+    return false;
   }
 
   let settings = loadSettings();
@@ -508,24 +536,28 @@
   function saveSettings() {
     localStorage.setItem('box-settings', JSON.stringify(settings));
     localStorage.setItem('box-settings-ts', String(Date.now()));
-    const base = serverBase();
+    const base = effectiveServerUrl();
     if (!base) return;
     fetch(base + '/api/settings/' + SERVER_DEVICE_ID, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-API-Key': settings.apiKey || '' },
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': effectiveApiKey() },
       body: JSON.stringify(settings)
     }).then(r => { if (!r.ok) console.warn('Сохранение на сервер не удалось, статус', r.status); })
       .catch(() => console.warn('Сохранение на сервер не удалось — сеть недоступна'));
   }
-  function serverBase() {
-    if (settings.dataSource === 'cloudflare' && settings.dataUrl) return settings.dataUrl.replace(/\/$/, '');
-    return null;
+  function effectiveServerUrl() {
+    if (settings.useAltServer && settings.altUrl) return settings.altUrl.replace(/\/$/, '');
+    return SERVER_URL !== 'ВСТАВЬ_СЮДА_ССЫЛКУ_НА_WORKER' ? SERVER_URL.replace(/\/$/, '') : null;
+  }
+  function effectiveApiKey() {
+    if (settings.useAltServer && settings.altUrl) return settings.altApiKey || '';
+    return SERVER_API_KEY !== 'ВСТАВЬ_СЮДА_КЛЮЧ' ? SERVER_API_KEY : '';
   }
   function loadSettingsFromServer() {
-    const base = serverBase();
+    const base = effectiveServerUrl();
     if (!base) return;
     fetch(base + '/api/settings/' + SERVER_DEVICE_ID, {
-      headers: { 'X-API-Key': settings.apiKey || '' }
+      headers: { 'X-API-Key': effectiveApiKey() }
     })
       .then(r => r.ok ? r.json() : null)
       .then(resp => {
@@ -536,7 +568,7 @@
         if (serverTs <= localTs) return; // локальная копия новее или того же возраста — не трогаем её
         settings = Object.assign({}, DEFAULTS, remote, {
           sensors: Object.assign({}, DEFAULTS.sensors, remote.sensors),
-          guestVisibility: Object.assign({}, DEFAULTS.guestVisibility, remote.guestVisibility)
+          guests: Array.isArray(remote.guests) && remote.guests.length === 2 ? remote.guests : DEFAULTS.guests
         });
         localStorage.setItem('box-settings', JSON.stringify(settings));
         localStorage.setItem('box-settings-ts', String(serverTs));
@@ -560,10 +592,10 @@
     };
   }
   function fetchRealReading() {
-    const url = settings.dataUrl;
-    if (!url) return Promise.reject(new Error('Ссылка на данные не задана'));
-    const full = url + (url.includes('?') ? '&' : '?') + '_=' + Date.now();
-    return fetch(full).then(r => { if (!r.ok) throw new Error('Сервер недоступен'); return r.json(); });
+    const url = effectiveServerUrl();
+    if (!url) return Promise.reject(new Error('Сервер не настроен'));
+    const full = url + '?_=' + Date.now();
+    return fetch(full, { headers: { 'X-API-Key': effectiveApiKey() } }).then(r => { if (!r.ok) throw new Error('Сервер недоступен'); return r.json(); });
   }
 
   // ==================== РЕНДЕР: ГЛАВНАЯ ВКЛАДКА ====================
@@ -741,7 +773,6 @@
     document.getElementById('footnote').textContent = settings.testMode
       ? 'Тестовые данные. Реальные показания появятся после подключения коробочки и приёмника.'
       : 'Тестовый режим выключен — данные берутся по ссылке из настроек.';
-    document.getElementById('dataUrlField').style.display = settings.testMode ? 'none' : 'block';
     const p = currentPreset();
     document.getElementById('loraFreqLabel').textContent = 'SX1262 · ' + p.freq + (p.hasLBT && settings.lbtMode ? ' · LBT+AFA' : '');
   }
@@ -772,9 +803,15 @@
     { id: 'gps', name: 'GPS / ГНСС', sub: 'Координаты', icon: 'pin', group: 'system' },
     { id: 'sensors', name: 'Датчики', sub: 'Температура, акселерометр', icon: 'thermo', group: 'system' },
     { id: 'updates', name: 'Обновления', sub: 'Прошивка базы и коробочки', icon: 'update', group: 'system' },
-    { id: 'security', name: 'Безопасность', sub: 'Пароли, приватность', icon: 'lock', group: null }
+    { id: 'about', name: 'О системе', sub: '', icon: 'box', group: 'system' },
+    { id: 'security', name: 'Гостевой доступ', sub: 'Пароли для гостей, приватность', icon: 'lock', group: null },
+    { id: 'adminAccess', name: 'Доступ администратора', sub: '', icon: 'lock', group: null }
   ];
   function renderCatGrid() {
+    const aboutIdx = CATEGORIES.findIndex(c => c.id === 'about');
+    CATEGORIES[aboutIdx].sub = 'build ' + BUILD_NUMBER + ' · ' + BUILD_DATE;
+    const adminIdx = CATEGORIES.findIndex(c => c.id === 'adminAccess');
+    CATEGORIES[adminIdx].sub = sessionAccess === 'admin' ? 'Вы вошли как администратор' : (sessionAccess === 'guest' ? 'Вы вошли как гость' : 'Не авторизован');
     const themeIdx = CATEGORIES.findIndex(c => c.id === 'theme');
     CATEGORIES[themeIdx].sub = THEME_META[settings.theme] ? THEME_META[settings.theme].name : '';
     const visible = CATEGORIES.filter(c => canShowCategory(c.id));
@@ -836,13 +873,26 @@
   function updateLbtRow() { document.getElementById('lbtRow').style.display = currentPreset().hasLBT ? 'flex' : 'none'; }
   function setSeg(segId, mode) { document.querySelectorAll('#' + segId + ' button').forEach(b => b.classList.toggle('active', b.dataset.mode === mode)); }
   document.querySelectorAll('.seg').forEach(seg => seg.addEventListener('click', (e) => { const btn = e.target.closest('button'); if (!btn) return; setSeg(seg.id, btn.dataset.mode); }));
-  document.getElementById('testModeToggle').addEventListener('change', (e) => { document.getElementById('dataUrlField').style.display = e.target.checked ? 'none' : 'block'; });
+  document.getElementById('serverModeSeg').addEventListener('click', (e) => {
+    const btn = e.target.closest('button'); if (!btn) return;
+    setSeg('serverModeSeg', btn.dataset.mode);
+    document.getElementById('altServerFields').style.display = btn.dataset.mode === 'alt' ? 'block' : 'none';
+  });
 
   const overlay = document.getElementById('overlay'), sheet = document.getElementById('sheet');
   const pinOverlay = document.getElementById('pinOverlay'), pinSheet = document.getElementById('pinSheet');
 
+  function hasAnyPassword() {
+    return (ADMIN_PASSWORD !== 'ВСТАВЬ_СЮДА_ПАРОЛЬ_РАЗРАБОТЧИКА') || settings.guests.some(g => g.pin);
+  }
+  function updateSettingsIcon() {
+    const btn = document.getElementById('settingsBtn');
+    const locked = hasAnyPassword() && !sessionAccess;
+    btn.innerHTML = locked ? ICONS.lock : ICONS.gear;
+  }
+
   function openSheet() {
-    if (!settings.adminPin && !settings.guestPin) { sessionAccess = 'admin'; openSheetActual(); return; }
+    if (!hasAnyPassword()) { sessionAccess = 'admin'; openSheetActual(); return; }
     if (sessionAccess) { openSheetActual(); return; }
     openPinGate();
   }
@@ -855,9 +905,12 @@
   function closePinGate() { pinOverlay.classList.remove('open'); pinSheet.classList.remove('open'); }
   document.getElementById('pinSubmitBtn').addEventListener('click', () => {
     const val = document.getElementById('pinEnterInput').value;
-    if (settings.adminPin && val === settings.adminPin) { sessionAccess = 'admin'; closePinGate(); openSheetActual(); }
-    else if (settings.guestPin && val === settings.guestPin) { sessionAccess = 'guest'; closePinGate(); openSheetActual(); }
-    else {
+    const guestIdx = settings.guests.findIndex(g => g.pin && g.pin === val);
+    if (val === ADMIN_PASSWORD && ADMIN_PASSWORD !== 'ВСТАВЬ_СЮДА_ПАРОЛЬ_РАЗРАБОТЧИКА') {
+      sessionAccess = 'admin'; updateSettingsIcon(); closePinGate(); openSheetActual();
+    } else if (guestIdx >= 0) {
+      sessionAccess = 'guest'; sessionGuestIndex = guestIdx; updateSettingsIcon(); closePinGate(); openSheetActual();
+    } else {
       document.getElementById('pinError').style.display = 'block';
       document.getElementById('pinEnterInput').classList.add('shake');
       setTimeout(() => document.getElementById('pinEnterInput').classList.remove('shake'), 400);
@@ -870,10 +923,10 @@
     pendingTheme = settings.theme;
     document.getElementById('deviceNameInput').value = settings.deviceName;
     document.getElementById('testModeToggle').checked = settings.testMode;
-    document.getElementById('dataUrlInput').value = settings.dataUrl;
-    document.getElementById('apiKeyInput').value = settings.apiKey;
-    document.getElementById('dataUrlField').style.display = settings.testMode ? 'none' : 'block';
-    setSeg('dataSourceSeg', settings.dataSource);
+    setSeg('serverModeSeg', settings.useAltServer ? 'alt' : 'default');
+    document.getElementById('altServerFields').style.display = settings.useAltServer ? 'block' : 'none';
+    document.getElementById('altUrlInput').value = settings.altUrl;
+    document.getElementById('altKeyInput').value = settings.altApiKey;
     setSeg('fsOffsetSeg', settings.fsOffset);
     document.getElementById('lbtToggle').checked = settings.lbtMode;
     document.getElementById('gpsEnabled').checked = settings.sensors.gps.enabled;
@@ -884,10 +937,12 @@
     setSeg('tempInModeSeg', settings.sensors.tempIn.mode);
     setSeg('tempOutModeSeg', settings.sensors.tempOut.mode);
     setSeg('gnssSeg', settings.gnssMode);
-    document.getElementById('adminPinInput').value = settings.adminPin;
-    document.getElementById('guestPinInput').value = settings.guestPin;
+    document.getElementById('guest0PinInput').value = settings.guests[0].pin;
+    document.getElementById('guest1PinInput').value = settings.guests[1].pin;
     document.getElementById('hideGpsToggle').checked = settings.hideGps;
-    renderGuestVisList();
+    renderGuestVisList(0); renderGuestVisList(1);
+    document.getElementById('aboutBuild').textContent = 'build ' + BUILD_NUMBER + ' · ' + BUILD_DATE;
+    document.getElementById('adminAccessStatus').textContent = sessionAccess === 'admin' ? 'Администратор' : (sessionAccess === 'guest' ? ('Гость ' + (sessionGuestIndex + 1)) : 'Не авторизован');
     renderCatGrid(); renderThemeGrid(); renderPresets(); updateLbtRow();
     openSheetView('home');
     overlay.classList.add('open'); sheet.classList.add('open');
@@ -897,6 +952,10 @@
     overlay.classList.remove('open'); sheet.classList.remove('open');
   }
   document.getElementById('settingsBtn').addEventListener('click', openSheet);
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    sessionAccess = null; sessionGuestIndex = -1;
+    updateSettingsIcon(); closeSheet();
+  });
   overlay.addEventListener('click', closeSheet);
 
   function backHomeAndSave() { saveSettings(); applyTheme(); refreshChrome(); renderAllTabs(); refresh(); openSheetView('home'); renderCatGrid(); }
@@ -919,28 +978,31 @@
   document.getElementById('saveDeviceBtn').addEventListener('click', () => {
     settings.deviceName = document.getElementById('deviceNameInput').value.trim() || 'Коробочка';
     settings.testMode = document.getElementById('testModeToggle').checked;
-    settings.dataUrl = document.getElementById('dataUrlInput').value.trim();
-    settings.apiKey = document.getElementById('apiKeyInput').value.trim();
-    settings.dataSource = document.querySelector('#dataSourceSeg button.active').dataset.mode;
+    settings.useAltServer = document.querySelector('#serverModeSeg button.active').dataset.mode === 'alt';
+    settings.altUrl = document.getElementById('altUrlInput').value.trim();
+    settings.altApiKey = document.getElementById('altKeyInput').value.trim();
     settings.fsOffset = document.querySelector('#fsOffsetSeg button.active').dataset.mode;
     updateSafeTop();
     backHomeAndSave();
   });
   const GUEST_VIS_LABELS = { theme: 'Тема', device: 'Устройство', lora: 'Мощность модуля', gps: 'GPS / ГНСС', sensors: 'Датчики', updates: 'Обновления' };
-  function renderGuestVisList() {
-    const wrap = document.getElementById('guestVisList'); wrap.innerHTML = '';
+  function renderGuestVisList(idx) {
+    const wrap = document.getElementById('guest' + idx + 'VisList'); wrap.innerHTML = '';
     Object.keys(GUEST_VIS_LABELS).forEach(id => {
       const row = document.createElement('div'); row.className = 'toggle-row';
       row.innerHTML = `<div class="t-label">${GUEST_VIS_LABELS[id]}</div>
-        <label class="switch"><input type="checkbox" data-gv="${id}" ${settings.guestVisibility[id] ? 'checked' : ''}><span class="track"></span></label>`;
+        <label class="switch"><input type="checkbox" data-gv="${idx}:${id}" ${settings.guests[idx].visibility[id] ? 'checked' : ''}><span class="track"></span></label>`;
       wrap.appendChild(row);
     });
   }
   document.getElementById('saveSecurityBtn').addEventListener('click', () => {
-    settings.adminPin = document.getElementById('adminPinInput').value.trim();
-    settings.guestPin = document.getElementById('guestPinInput').value.trim();
+    settings.guests[0].pin = document.getElementById('guest0PinInput').value.trim();
+    settings.guests[1].pin = document.getElementById('guest1PinInput').value.trim();
     settings.hideGps = document.getElementById('hideGpsToggle').checked;
-    document.querySelectorAll('#guestVisList [data-gv]').forEach(cb => { settings.guestVisibility[cb.dataset.gv] = cb.checked; });
+    document.querySelectorAll('[data-gv]').forEach(cb => {
+      const [idx, id] = cb.dataset.gv.split(':');
+      settings.guests[+idx].visibility[id] = cb.checked;
+    });
     backHomeAndSave();
   });
 
@@ -1014,6 +1076,8 @@
   refresh();
   applyTelegramChrome();
   loadSettingsFromServer();
+  updateSettingsIcon();
 </script>
 </body>
 </html>
+s
