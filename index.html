@@ -8,34 +8,20 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
-  /* ==================== ТЕМЫ / ЦВЕТА ==================== */
-  :root, [data-theme="calm-light"]{
+  /* ==================== ТЕМЫ / ЦВЕТА (только бежевая, светлая/тёмная) ==================== */
+  :root, [data-theme="light"]{
     --bg:#F7F0E3; --panel:#FFFFFF; --panel-raised:#FBF5E8; --sand:#EDE0C7; --border:#E6D9BC;
     --amber:#C1653D; --teal:#6B8F71; --red:#C1524B; --yellow:#C99A3D;
     --text:#3C331F; --text-muted:#8A7A5C; --text-dim:#B7A886;
     --shadow: 0 1px 3px rgba(60,51,31,0.08), 0 1px 2px rgba(60,51,31,0.05);
     --btn-text: #3C331F; --safe-top: 0px;
   }
-  [data-theme="calm-dark"]{
+  [data-theme="dark"]{
     --bg:#231D14; --panel:#2C2417; --panel-raised:#33291A; --sand:#3B2F1D; --border:#4A3C24;
     --amber:#E08A5B; --teal:#7FB58A; --red:#E2776D; --yellow:#E0B75B;
     --text:#F1E6D3; --text-muted:#BBA985; --text-dim:#8C7C5C;
     --shadow: 0 2px 6px rgba(0,0,0,0.35);
     --btn-text:#231D14;
-  }
-  [data-theme="google-light"]{
-    --bg:#FFFFFF; --panel:#FFFFFF; --panel-raised:#F1F3F4; --sand:#F1F3F4; --border:#E0E0E0;
-    --amber:#4285F4; --teal:#34A853; --red:#EA4335; --yellow:#FBBC05;
-    --text:#202124; --text-muted:#5F6368; --text-dim:#9AA0A6;
-    --shadow: 0 1px 2px rgba(60,64,67,0.12), 0 1px 3px rgba(60,64,67,0.10);
-    --btn-text:#FFFFFF;
-  }
-  [data-theme="google-dark"]{
-    --bg:#202124; --panel:#28292C; --panel-raised:#303134; --sand:#35363A; --border:#3C4043;
-    --amber:#8AB4F8; --teal:#81C995; --red:#F28B82; --yellow:#FDD663;
-    --text:#E8EAED; --text-muted:#9AA0A6; --text-dim:#5F6368;
-    --shadow: 0 2px 6px rgba(0,0,0,0.45);
-    --btn-text:#202124;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; transition: background .2s ease, color .2s ease; }
@@ -119,10 +105,9 @@
   .controls button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; }
   button:active { transform: scale(0.97); }
   button.primary { background: var(--amber); border-color: var(--amber); color: var(--btn-text); }
-  [data-theme^="google"] button.primary { border-radius: 24px; font-weight: 600; }
 
-  .spinner4 { width: 15px; height: 15px; border-radius: 50%; display: none; }
-  [data-theme^="google"] .spinner4.loading { display: block; background: conic-gradient(var(--amber) 0deg 90deg, var(--red) 90deg 180deg, var(--yellow) 180deg 270deg, var(--teal) 270deg 360deg); animation: spin4 .7s linear infinite; }
+  .spinner4 { width: 14px; height: 14px; border-radius: 50%; display: none; border: 2px solid rgba(255,255,255,0.4); border-top-color: currentColor; }
+  .spinner4.loading { display: block; animation: spin4 .7s linear infinite; }
   @keyframes spin4 { to { transform: rotate(360deg); } }
 
   .footnote { text-align: center; color: var(--text-dim); font-size: 11px; margin-top: 18px; line-height: 1.5; }
@@ -141,7 +126,7 @@
 
   .cat-grid { display: flex; flex-direction: column; gap: 10px; }
   .cat-tile { background: var(--panel-raised); border: 1px solid var(--border); border-radius: 16px; padding: 14px 16px; cursor: pointer; display: flex; align-items: center; gap: 14px; }
-  .cat-tile .cat-ico { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .cat-tile .cat-ico { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--text-muted); }
   .cat-tile .cat-ico svg { width: 19px; height: 19px; }
   .cat-tile .cat-name { font-size: 14px; font-weight: 500; }
   .cat-tile .cat-sub { font-size: 11.5px; color: var(--text-dim); margin-top: 1px; }
@@ -193,13 +178,6 @@
   .section-note { font-size: 11px; color: var(--text-dim); margin-bottom: 8px; line-height: 1.4; }
   .sheet .controls { margin-top: 20px; }
 
-  .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .theme-opt { border: 1px solid var(--border); border-radius: 12px; padding: 12px; cursor: pointer; text-align: center; background: var(--panel-raised); }
-  .theme-opt.active { border-color: var(--amber); box-shadow: 0 0 0 2px var(--amber) inset; }
-  .theme-opt .t-swatch { display: flex; justify-content: center; gap: 4px; margin-bottom: 6px; }
-  .theme-opt .t-swatch span { width: 12px; height: 12px; border-radius: 50%; }
-  .theme-opt .t-name { font-size: 12px; }
-
   .preset-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
   .preset { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; cursor: pointer; background: var(--panel-raised); }
   .preset.active { border-color: var(--amber); box-shadow: 0 0 0 1.5px var(--amber) inset; }
@@ -246,7 +224,7 @@
     </div>
 
     <div class="tabs-dots" id="tabsDots">
-      <span class="td active" data-i="0"></span><span class="td" data-i="1"></span><span class="td" data-i="2"></span>
+      <span class="td active" data-i="0"></span><span class="td" data-i="1"></span><span class="td" data-i="2"></span><span class="td" data-i="3"></span>
     </div>
     <div class="tab-caption" id="tabCaption">Основные показатели</div>
   </div>
@@ -255,6 +233,7 @@
     <div class="tab-panel" id="panelMain"><div class="grid" id="sensorGrid"></div></div>
     <div class="tab-panel" id="panelAccel"><div class="accel-big-wrap" id="accelBigWrap"></div></div>
     <div class="tab-panel" id="panelGps"><div id="gpsBigWrap"></div></div>
+    <div class="tab-panel" id="panelStatus"><div id="statusList" class="grid"></div></div>
   </div>
 
   <div class="px">
@@ -289,7 +268,12 @@
 
   <div class="sheet-view" id="viewTheme">
     <div class="sheet-head"><div class="back-btn" data-back>‹</div><h2>Тема оформления</h2></div>
-    <div class="theme-grid" id="themeGrid"></div>
+    <div class="seg" id="themeModeSeg">
+      <button data-mode="auto">Авто</button>
+      <button data-mode="light">Светлая</button>
+      <button data-mode="dark">Тёмная</button>
+    </div>
+    <div class="hint" style="margin-top:8px;">«Авто» подстраивается под тему Telegram, а если это не удаётся определить — под время суток на устройстве. Интернет для этого не нужен.</div>
     <div class="controls"><button class="primary" id="saveThemeBtn">Готово</button></div>
   </div>
 
@@ -441,6 +425,40 @@
     <div class="hint" style="margin-top:10px;">Когда база и коробочка появятся и подключатся к серверу — здесь будут их версии прошивки и статус связи.</div>
   </div>
 
+  <div class="sheet-view" id="viewActivation">
+    <div class="sheet-head"><div class="back-btn" data-back>‹</div><h2>Активация</h2></div>
+    <div class="field">
+      <label>Редакция</label>
+      <div class="seg" id="editionSeg">
+        <button data-mode="base">Base</button>
+        <button data-mode="standard">Standard</button>
+        <button data-mode="pro">Pro</button>
+        <button data-mode="x">X</button>
+      </div>
+      <div class="hint" id="editionLicenseHint"></div>
+    </div>
+    <div class="field" id="proCodeField" style="display:none;">
+      <label>Код активации</label>
+      <input type="text" id="proCodeInput" placeholder="Введи код">
+      <div class="hint">Либо активация онлайн, если есть связь с сервером.</div>
+      <div class="controls" style="margin-top:10px;"><button id="onlineActivateBtn">Активировать онлайн</button></div>
+    </div>
+    <div class="field">
+      <label>Приоритет активации</label>
+      <div class="seg" id="activationPrioritySeg">
+        <button data-mode="server">Сначала сервер</button>
+        <button data-mode="local">Только локально</button>
+      </div>
+      <div class="hint">При переходе на редакцию, требующую лицензию, сначала проверяется выбранный источник, второй — как резерв.</div>
+    </div>
+    <div class="controls"><button class="primary" id="saveActivationBtn">Готово</button></div>
+  </div>
+
+  <div class="sheet-view" id="viewServerControl">
+    <div class="sheet-head"><div class="back-btn" data-back>‹</div><h2>Управление с сервера</h2></div>
+    <div class="hint">Пока в разработке — позже отсюда можно будет менять настройки бота и сервера прямо из mini app. Синхронизация между несколькими клиентами — открытый вопрос, решаем постепенно.</div>
+  </div>
+
   <div class="sheet-view" id="viewAdminAccess">
     <div class="sheet-head"><div class="back-btn" data-back>‹</div><h2>Доступ администратора</h2></div>
     <div class="card wide">
@@ -455,14 +473,14 @@
 <script>
   // ==================== НАСТРОЙКИ СЕРВЕРА — впиши сюда свои значения ====================
   // Ссылка на твой Cloudflare Worker (без слэша на конце), например: https://box-server.твой-ник.workers.dev
-  const SERVER_URL = 'http://esp32-box-server.kirylych.workers.dev';
+  const SERVER_URL = 'ВСТАВЬ_СЮДА_ССЫЛКУ_НА_WORKER';
   // Тот же ключ, что стоит в env.API_KEY на Cloudflare
-  const SERVER_API_KEY = '176034';
+  const SERVER_API_KEY = 'ВСТАВЬ_СЮДА_КЛЮЧ';
   // Пароль разработчика — полный доступ, задаётся только тут, через код (не меняется в интерфейсе)
-  const ADMIN_PASSWORD = '';
+  const ADMIN_PASSWORD = 'ВСТАВЬ_СЮДА_ПАРОЛЬ_РАЗРАБОТЧИКА';
   // Номер сборки — обновляй при каждой новой версии, чтобы видеть в разделе "О системе", что реально загружено
-  const BUILD_NUMBER = 'Alfa version 21';
-  const BUILD_DATE = '07.09.2026';
+  const BUILD_NUMBER = '23';
+  const BUILD_DATE = '30.09.2026';
   // ==========================================================================================
 
   // ==================== ИКОНКИ ====================
@@ -487,20 +505,28 @@
     { id: 'rare', name: 'Редкие пакеты', freq: '868.70–869.20 МГц', power: 'до 25 мВт э.и.м.', duty: '≤0.1% раб. цикла', hasLBT: true }
   ];
   const GNSS_LABELS = { gps: 'GPS', gps_glonass: 'GPS + ГЛОНАСС', all: 'GPS + ГЛОНАСС + BeiDou' };
-  const TAB_CAPTIONS = ['Основные показатели', 'Ускорение', 'GPS'];
-  const THEME_ORDER = ['calm-light', 'calm-dark', 'google-light', 'google-dark'];
-  const THEME_META = {
-    'calm-light': { name: 'Бежевая', colors: ['#C1653D', '#F7F0E3'] },
-    'calm-dark':  { name: 'Бежевая тёмная', colors: ['#E08A5B', '#231D14'] },
-    'google-light': { name: 'Google', colors: ['#4285F4', '#EA4335', '#FBBC05', '#34A853'] },
-    'google-dark':  { name: 'Google тёмная', colors: ['#8AB4F8', '#F28B82', '#FDD663', '#81C995'] }
-  };
+  const TAB_CAPTIONS = ['Основные показатели', 'Ускорение', 'GPS', 'Статус'];
+  const EDITION_LABELS = { base: 'Base', standard: 'Standard', pro: 'Pro', x: 'X' };
+  const LICENSE_DEVICE_ID = 'license-config';
+  let licenseRequiredEditions = ['pro', 'x']; // по умолчанию, пока не подтянулось с сервера
+
+  // Вычисляет реальную тему (light/dark) без обращения к серверу — только Telegram или часы устройства
+  function computeEffectiveTheme() {
+    if (settings.themeMode === 'light' || settings.themeMode === 'dark') return settings.themeMode;
+    try {
+      const tg = window.Telegram && window.Telegram.WebApp;
+      if (tg && (tg.colorScheme === 'light' || tg.colorScheme === 'dark')) return tg.colorScheme;
+    } catch (e) {}
+    const hour = new Date().getHours();
+    return (hour < 7 || hour >= 20) ? 'dark' : 'light';
+  }
 
   // ==================== ДАННЫЕ / НАСТРОЙКИ ПО УМОЛЧАНИЮ ====================
   const DEFAULTS = {
     deviceName: 'Коробочка', testMode: true,
     useAltServer: false, altUrl: '', altApiKey: '',
-    fsOffset: 'off', theme: 'calm-light',
+    fsOffset: 'off', themeMode: 'auto',
+    edition: 'base', proCode: '', activationPriority: 'server',
     loraPreset: 'power', lbtMode: false, gnssMode: 'gps', hideGps: false,
     guests: [
       { pin: '', visibility: { theme: true, device: false, lora: false, gps: true, sensors: true, updates: false } },
@@ -553,6 +579,27 @@
     if (settings.useAltServer && settings.altUrl) return settings.altApiKey || '';
     return SERVER_API_KEY !== 'ВСТАВЬ_СЮДА_КЛЮЧ' ? SERVER_API_KEY : '';
   }
+  function loadLicenseConfig() {
+    const base = effectiveServerUrl();
+    if (!base) return;
+    fetch(base + '/api/settings/' + LICENSE_DEVICE_ID, { headers: { 'X-API-Key': effectiveApiKey() } })
+      .then(r => r.ok ? r.json() : null)
+      .then(resp => {
+        const data = resp && resp.data;
+        if (data && Array.isArray(data.requireLicense)) {
+          licenseRequiredEditions = data.requireLicense.filter(e => e === 'pro' || e === 'x');
+        }
+        updateEditionLicenseHint();
+      })
+      .catch(() => {});
+  }
+  function updateEditionLicenseHint() {
+    const hint = document.getElementById('editionLicenseHint');
+    if (!hint) return;
+    const names = licenseRequiredEditions.map(e => EDITION_LABELS[e]).join(' и ');
+    hint.textContent = names ? `Сейчас лицензия требуется для: ${names}. Base и Standard — всегда бесплатно. Список настраивается на сервере.` : 'Сейчас все редакции доступны без лицензии (настраивается на сервере).';
+  }
+
   function loadSettingsFromServer() {
     const base = effectiveServerUrl();
     if (!base) return;
@@ -577,9 +624,8 @@
       .catch(() => {});
   }
   function currentPreset() { return LORA_PRESETS.find(p => p.id === settings.loraPreset) || LORA_PRESETS[0]; }
-  function isGoogle() { return settings.theme.startsWith('google'); }
-  function applyTheme() { document.documentElement.setAttribute('data-theme', settings.theme); }
-  function iconColor(i) { return isGoogle() ? ['var(--amber)','var(--red)','var(--yellow)','var(--teal)'][i % 4] : 'var(--amber)'; }
+  function applyTheme() { document.documentElement.setAttribute('data-theme', computeEffectiveTheme()); }
+  function iconColor() { return 'var(--amber)'; }
 
   function randomReading() {
     return {
@@ -734,7 +780,32 @@
   }
 
   function renderSignalLabel() { document.getElementById('signalLabel').innerHTML = ico('antenna', iconColor(0)) + 'Сигнал LoRa'; }
-  function renderAllTabs() { renderMain(); renderAccel(); renderGps(); renderSignalLabel(); }
+
+  function renderStatus() {
+    const wrap = document.getElementById('statusList'); wrap.innerHTML = '';
+    const items = [
+      { name: 'LoRa-модуль', ok: true },
+      { name: 'GPS', ok: settings.sensors.gps.enabled },
+      { name: 'Датчик температуры (внутри)', ok: settings.sensors.tempIn.enabled },
+      { name: 'Датчик температуры (снаружи)', ok: settings.sensors.tempOut.enabled },
+      { name: 'Акселерометр', ok: settings.sensors.accel.enabled },
+      { name: 'Батарея', ok: settings.sensors.batt.enabled },
+      { name: 'Связь с сервером', ok: !!effectiveServerUrl() }
+    ];
+    items.forEach(it => {
+      const card = document.createElement('div'); card.className = 'card wide';
+      const color = it.ok ? 'var(--teal)' : 'var(--text-dim)';
+      card.innerHTML = `<div class="subrow" style="margin-top:0;"><span style="display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:${color};"></span>${it.name}</span><b>${it.ok ? 'в норме' : 'выключен / нет данных'}</b></div>`;
+      wrap.appendChild(card);
+    });
+    if (settings.testMode) {
+      const note = document.createElement('div'); note.className = 'hint';
+      note.style.cssText = 'grid-column:1/-1;text-align:center;';
+      note.textContent = 'Тестовый режим — статусы условные, реальная диагностика появится вместе с устройствами.';
+      wrap.appendChild(note);
+    }
+  }
+  function renderAllTabs() { renderMain(); renderAccel(); renderGps(); renderStatus(); renderSignalLabel(); }
 
   function resetReadingsToDash() {
     ['tempIn_val','tempOut_val'].forEach(id => setText(id, '--<span class="unit">°C</span>', true));
@@ -759,7 +830,7 @@
         document.getElementById('statusDot').classList.add('err');
       });
       spinner.classList.remove('loading');
-    }, isGoogle() ? 450 : 0);
+    }, 0);
   }
   document.getElementById('refreshBtn').addEventListener('click', refresh);
   document.getElementById('pingBtn').addEventListener('click', () => {
@@ -785,12 +856,12 @@
     caption.textContent = TAB_CAPTIONS[i];
     if (i === 2 && mapInstance) setTimeout(() => mapInstance.invalidateSize(), 60);
   }
-  tabsScroll.addEventListener('scroll', () => { const i = Math.round(tabsScroll.scrollLeft / tabsScroll.clientWidth); setActiveTab(Math.max(0, Math.min(2, i))); });
+  tabsScroll.addEventListener('scroll', () => { const i = Math.round(tabsScroll.scrollLeft / tabsScroll.clientWidth); setActiveTab(Math.max(0, Math.min(3, i))); });
   dots.forEach(d => d.addEventListener('click', () => tabsScroll.scrollTo({ left: (+d.dataset.i) * tabsScroll.clientWidth, behavior: 'smooth' })));
 
   document.getElementById('themeQuickBtn').addEventListener('click', () => {
-    const i = THEME_ORDER.indexOf(settings.theme);
-    settings.theme = THEME_ORDER[(i + 1) % THEME_ORDER.length];
+    const order = ['auto', 'light', 'dark'];
+    settings.themeMode = order[(order.indexOf(settings.themeMode) + 1) % order.length];
     saveSettings(); applyTheme(); renderAllTabs();
   });
 
@@ -804,6 +875,8 @@
     { id: 'sensors', name: 'Датчики', sub: 'Температура, акселерометр', icon: 'thermo', group: 'system' },
     { id: 'updates', name: 'Обновления', sub: 'Прошивка базы и коробочки', icon: 'update', group: 'system' },
     { id: 'about', name: 'О системе', sub: '', icon: 'box', group: 'system' },
+    { id: 'activation', name: 'Активация', sub: '', icon: 'lock', group: 'system' },
+    { id: 'serverControl', name: 'Управление с сервера', sub: 'В разработке', icon: 'update', group: 'system' },
     { id: 'security', name: 'Гостевой доступ', sub: 'Пароли для гостей, приватность', icon: 'lock', group: null },
     { id: 'adminAccess', name: 'Доступ администратора', sub: '', icon: 'lock', group: null }
   ];
@@ -813,14 +886,16 @@
     const adminIdx = CATEGORIES.findIndex(c => c.id === 'adminAccess');
     CATEGORIES[adminIdx].sub = sessionAccess === 'admin' ? 'Вы вошли как администратор' : (sessionAccess === 'guest' ? 'Вы вошли как гость' : 'Не авторизован');
     const themeIdx = CATEGORIES.findIndex(c => c.id === 'theme');
-    CATEGORIES[themeIdx].sub = THEME_META[settings.theme] ? THEME_META[settings.theme].name : '';
+    const modeLabels = { auto: 'Авто', light: 'Светлая', dark: 'Тёмная' };
+    CATEGORIES[themeIdx].sub = modeLabels[settings.themeMode] || '';
+    const edIdx = CATEGORIES.findIndex(c => c.id === 'activation');
+    CATEGORIES[edIdx].sub = 'Редакция: ' + (EDITION_LABELS[settings.edition] || settings.edition);
     const visible = CATEGORIES.filter(c => canShowCategory(c.id));
     const grid = document.getElementById('catGrid'); grid.innerHTML = '';
 
-    function makeRow(c, i) {
+    function makeRow(c) {
       const row = document.createElement('div'); row.className = 'cat-tile';
-      const col = CAT_COLORS[i % CAT_COLORS.length];
-      row.innerHTML = `<div class="cat-ico" style="background:${col}33;color:${col}">${ICONS[c.icon]}</div><div><div class="cat-name">${c.name}</div><div class="cat-sub">${c.sub}</div></div>`;
+      row.innerHTML = `<div class="cat-ico">${ICONS[c.icon]}</div><div><div class="cat-name">${c.name}</div><div class="cat-sub">${c.sub}</div></div>`;
       row.addEventListener('click', () => openSheetView(c.id));
       return row;
     }
@@ -847,16 +922,18 @@
   }
   document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => openSheetView('home')));
 
-  let pendingTheme = settings.theme;
+  let pendingThemeMode = settings.themeMode;
+  document.getElementById('themeModeSeg').addEventListener('click', (e) => {
+    const btn = e.target.closest('button'); if (!btn) return;
+    pendingThemeMode = btn.dataset.mode;
+    setSeg('themeModeSeg', pendingThemeMode);
+    const saved = settings.themeMode; settings.themeMode = pendingThemeMode;
+    document.documentElement.setAttribute('data-theme', computeEffectiveTheme());
+    settings.themeMode = saved;
+  });
   function renderThemeGrid() {
-    const grid = document.getElementById('themeGrid'); grid.innerHTML = '';
-    THEME_ORDER.forEach(id => {
-      const meta = THEME_META[id];
-      const el = document.createElement('div'); el.className = 'theme-opt' + (id === pendingTheme ? ' active' : '');
-      el.innerHTML = `<div class="t-swatch">${meta.colors.map(c => `<span style="background:${c}"></span>`).join('')}</div><div class="t-name">${meta.name}</div>`;
-      el.addEventListener('click', () => { document.documentElement.setAttribute('data-theme', id); pendingTheme = id; renderThemeGrid(); });
-      grid.appendChild(el);
-    });
+    pendingThemeMode = settings.themeMode;
+    setSeg('themeModeSeg', pendingThemeMode);
   }
 
   function renderPresets() {
@@ -920,7 +997,7 @@
   pinOverlay.addEventListener('click', closePinGate);
 
   function openSheetActual() {
-    pendingTheme = settings.theme;
+    pendingThemeMode = settings.themeMode;
     document.getElementById('deviceNameInput').value = settings.deviceName;
     document.getElementById('testModeToggle').checked = settings.testMode;
     setSeg('serverModeSeg', settings.useAltServer ? 'alt' : 'default');
@@ -941,6 +1018,11 @@
     document.getElementById('guest1PinInput').value = settings.guests[1].pin;
     document.getElementById('hideGpsToggle').checked = settings.hideGps;
     renderGuestVisList(0); renderGuestVisList(1);
+    setSeg('editionSeg', settings.edition);
+    updateEditionLicenseHint();
+    document.getElementById('proCodeField').style.display = licenseRequiredEditions.includes(settings.edition) ? 'block' : 'none';
+    document.getElementById('proCodeInput').value = settings.proCode;
+    setSeg('activationPrioritySeg', settings.activationPriority);
     document.getElementById('aboutBuild').textContent = 'build ' + BUILD_NUMBER + ' · ' + BUILD_DATE;
     document.getElementById('adminAccessStatus').textContent = sessionAccess === 'admin' ? 'Администратор' : (sessionAccess === 'guest' ? ('Гость ' + (sessionGuestIndex + 1)) : 'Не авторизован');
     renderCatGrid(); renderThemeGrid(); renderPresets(); updateLbtRow();
@@ -948,10 +1030,29 @@
     overlay.classList.add('open'); sheet.classList.add('open');
   }
   function closeSheet() {
-    document.documentElement.setAttribute('data-theme', settings.theme);
+    document.documentElement.setAttribute('data-theme', computeEffectiveTheme());
     overlay.classList.remove('open'); sheet.classList.remove('open');
   }
   document.getElementById('settingsBtn').addEventListener('click', openSheet);
+  document.getElementById('editionSeg').addEventListener('click', (e) => {
+    const btn = e.target.closest('button'); if (!btn) return;
+    document.getElementById('proCodeField').style.display = licenseRequiredEditions.includes(btn.dataset.mode) ? 'block' : 'none';
+  });
+  document.getElementById('onlineActivateBtn').addEventListener('click', function () {
+    this.disabled = true; this.textContent = 'Проверяю сервер…';
+    const base = effectiveServerUrl();
+    if (!base) { this.textContent = 'Нет связи с сервером'; setTimeout(() => { this.disabled = false; this.textContent = 'Активировать онлайн'; }, 1500); return; }
+    fetch(base + '/api/settings/' + SERVER_DEVICE_ID, { headers: { 'X-API-Key': effectiveApiKey() } })
+      .then(() => { this.textContent = 'Проверено (демо)'; })
+      .catch(() => { this.textContent = 'Сервер недоступен'; })
+      .finally(() => setTimeout(() => { this.disabled = false; this.textContent = 'Активировать онлайн'; }, 1500));
+  });
+  document.getElementById('saveActivationBtn').addEventListener('click', () => {
+    settings.edition = document.querySelector('#editionSeg button.active').dataset.mode;
+    settings.proCode = document.getElementById('proCodeInput').value.trim();
+    settings.activationPriority = document.querySelector('#activationPrioritySeg button.active').dataset.mode;
+    backHomeAndSave();
+  });
   document.getElementById('logoutBtn').addEventListener('click', () => {
     sessionAccess = null; sessionGuestIndex = -1;
     updateSettingsIcon(); closeSheet();
@@ -959,7 +1060,7 @@
   overlay.addEventListener('click', closeSheet);
 
   function backHomeAndSave() { saveSettings(); applyTheme(); refreshChrome(); renderAllTabs(); refresh(); openSheetView('home'); renderCatGrid(); }
-  document.getElementById('saveThemeBtn').addEventListener('click', () => { settings.theme = pendingTheme; backHomeAndSave(); });
+  document.getElementById('saveThemeBtn').addEventListener('click', () => { settings.themeMode = pendingThemeMode; backHomeAndSave(); });
   document.getElementById('saveLoraBtn').addEventListener('click', () => { settings.lbtMode = document.getElementById('lbtToggle').checked; backHomeAndSave(); });
   document.getElementById('saveGpsBtn').addEventListener('click', () => {
     settings.sensors.gps.enabled = document.getElementById('gpsEnabled').checked;
@@ -1076,8 +1177,8 @@
   refresh();
   applyTelegramChrome();
   loadSettingsFromServer();
+  loadLicenseConfig();
   updateSettingsIcon();
 </script>
 </body>
 </html>
-s
